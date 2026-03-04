@@ -1,16 +1,25 @@
-# React + Vite
+# TigerConnect
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+TigerConnect is a social scheduling web app designed for Princeton students to make coordinating time with friends easier. Instead of messaging multiple people individually, users can signal when they are free and view shared availability to quickly find times to meet.
 
-Currently, two official plugins are available:
+## Team
+- Dylan Conard (Project Lead) – dc4986@princeton.edu  
+- Chanbin Park – cp5721@princeton.edu  
+- Mayank Sengupta – mayank.sengupta@princeton.edu  
+- Jasin Cekinmez – jasincekinmez@princeton.edu  
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Core Features
+- Princeton CAS authentication  
+- Add and manage friends  
+- “Looking to Hang” activity status  
+- Shared calendar availability  
+- Suggested meeting times based on overlapping schedules  
 
-## React Compiler
+## Tech Stack
+- **Frontend:** React  
+- **Backend:** Flask
+- **Database:** PostgreSQL  
+- **APIs:** Google Calendar, SendGrid
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Goal
+Reduce the friction of planning hangouts and make it easier for Princeton students to connect in person.
