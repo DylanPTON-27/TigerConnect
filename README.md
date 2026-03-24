@@ -1,0 +1,20 @@
+# TigerConnect
+TigerConnect is a social scheduling web app designed for Princeton students to make coordinating time with friends easier. Instead of messaging multiple people individually, users can signal when they are free and view shared availability to quickly find times to meet.
+## Team
+- Dylan Conard (Team Leader) – dc4986@princeton.edu  
+- Chanbin Park – cp5721@princeton.edu  
+- Mayank Sengupta – mayank.sengupta@princeton.edu  
+- Jasin Cekinmez – jasincekinmez@princeton.edu  
+## Core Features
+- Princeton CAS authentication  
+- Add and manage friends  
+- “Looking to Hang” activity status  
+- Shared calendar availability  
+- Suggested meeting times based on overlapping schedules  
+## Tech Stack
+- **Frontend:** React  
+- **Backend:** Flask
+- **Database:** PostgreSQL  
+- **APIs:** Google Calendar, SendGrid
+## Goal
+Reduce the friction of planning hangouts and make it easier for Princeton students to connect in person.
