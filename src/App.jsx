@@ -7,6 +7,7 @@ import ICAL from 'ical.js';
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import Header from './components/Header'
 
 function App() {
   const [currentTime, setCurrentTime] = useState(0);
@@ -87,6 +88,15 @@ function App() {
 
   return (
     <>
+      <Header />
+      <div>
+        <a href="https://vite.dev" target="_blank">
+          <img src={viteLogo} className="logo" alt="Vite logo" />
+        </a>
+        <a href="https://react.dev" target="_blank">
+          <img src={reactLogo} className="logo react" alt="React logo" />
+        </a>
+      </div>
       <h1>TigerConnect</h1>
 
       <FullCalendar
