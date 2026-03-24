@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import FullCalendar from '@fullcalendar/react'
-import dayGridPlugin from '@fullcalendar/daygrid'
+import timeGridPlugin from '@fullcalendar/timegrid'
 import iCalendarPlugin from '@fullcalendar/icalendar'; 
 import ICAL from 'ical.js';
 import { styled } from '@mui/material/styles';
@@ -91,9 +91,10 @@ function App() {
        <Header />
 
       <FullCalendar
-        plugins={[dayGridPlugin, iCalendarPlugin]}
-        height={400}
-        initialView="dayGridMonth"
+        plugins={[timeGridPlugin]}
+        height={600}
+        initialView="timeGridWeek"
+        nowIndicator='true'
         events={events}
       />
 
