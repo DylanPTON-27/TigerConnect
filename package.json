@@ -8,9 +8,17 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "api": "flask run --host=0.0.0.0 --port=8000"
+    "api": "flask run --host=0.0.0.0 --port=8000 --debug"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@fullcalendar/core": "^6.1.20",
+    "@fullcalendar/daygrid": "^6.1.20",
+    "@fullcalendar/icalendar": "^6.1.20",
+    "@fullcalendar/react": "^6.1.20",
+    "@mui/icons-material": "^7.3.9",
+    "@mui/material": "^7.3.9",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
