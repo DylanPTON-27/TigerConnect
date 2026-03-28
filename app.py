@@ -3,6 +3,10 @@ from flask import Flask, make_response, request
 import psycopg as pg
 import io
 
+# Friends Route Import
+from routes.friends import friends_bp
+app.register_blueprint(friends_bp, url_prefix="/friends")
+
 app = Flask(__name__)
 
 @app.route('/api/time')

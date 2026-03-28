@@ -1,3 +1,8 @@
+from flask import Blueprint
+
+# Create Blueprint
+friends_bp = Blueprint("friends", __name__)
+
 # Friend Requests
 @friends_bp.route("/request", methods=["POST"])
 def send_request():

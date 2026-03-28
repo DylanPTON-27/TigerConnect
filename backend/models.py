@@ -14,7 +14,7 @@ class FriendRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False)
     receiver_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False)
-    status = db.Column(db.String, db.ForeignKey("activity_status"), nullable=False)
+    status = db.Column(db.String, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 # Friendship Status
