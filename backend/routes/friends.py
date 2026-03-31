@@ -38,6 +38,15 @@ def notifications():
     ).all()
     return jsonify(all_sender_ids)
 
+@friends_bp.route("/get_all_friends", methods=["POST"])
+def get_all_friends():
+    data = request.json
+    user_id = data['user']
+    all_friends_ids=Friendship.session.query(Friendship.friend_id).filter_by(user_id=user_id).all()
+    return jsonify(all_friends_ids)
+
+
+
 @friends_bp.route("/accept", methods=["POST"])
 def accept():
     data = request.json
