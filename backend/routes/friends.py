@@ -5,6 +5,8 @@ from flask import jsonify
 friends_bp = Blueprint("friends", __name__)
 
 # Friend Requests
+# SIDE ISSUE FIX POTENTIAL ADD USER AUTHENTICATION 
+# E.g. someone wants to friend someone else but they do it on someone's behalf this shouldn't occur 
 @friends_bp.route("/request", methods=["POST"])
 def send_request():
     data = request.json
@@ -81,6 +83,8 @@ def status_update():
     db.session.commit()
     return {"message": "Activity Status Updated"}
 
+
+# So add conditional to check time if time is ahead change to inactive 
 @friends_bp.route("/get_status", methods=["POST"])
 def get_status():
     data = request.json 
