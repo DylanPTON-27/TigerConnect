@@ -1,53 +1,92 @@
-#root {
-  max-width: 100%;
-  text-align: center;
+@import 'tailwindcss';
+@import '@skeletonlabs/skeleton'; 
+@import '@skeletonlabs/skeleton-svelte'; 
+@import '@skeletonlabs/skeleton/themes/cerberus';
+@custom-variant dark (&:where([data-mode=dark], [data-mode=dark] *));
+
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+[data-mode="dark"], [data-mode="light"] {
+  transition: 0.25s ease, 0.25s ease;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+a {
+  font-weight: 500;
+  text-decoration: inherit;
 }
 
-.card {
-  padding: 2em;
+.sx-svelte-calendar-wrapper {
+  width: 1200px;
+  max-width: 60vw;
+  height: 800px;
+  max-height: 80vh;
 }
 
-.read-the-docs {
-  color: #888;
+button {
+  border-radius: 8px;
+  margin-right: 5px;
+  margin-left: 5px;
+  padding: 0.8em 1em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.25s;
+  @apply bg-black dark:bg-white;
+  @apply text-white dark:text-black;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
 }
 
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 5px 10px;
-    border-bottom: 3px solid black;
+/* Carousel indicator styles (Skeleton Carousel) */
+.carousel-indicator,
+.carousel__indicator,
+[data-carousel-indicator],
+.carousel-indicator button,
+.carousel__indicator button {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  padding: 0;
+  margin: 0 6px;
+  background: #bbb;
+  border: none;
+  display: inline-block;
+  transition: background 0.3s, box-shadow 0.3s;
 }
 
-.title_top {
-    font-size: 3.2em;
-    font-weight: bold; 
+/* Active indicator */
+.carousel-indicator.active,
+.carousel__indicator.active,
+[data-carousel-indicator].active,
+.carousel-indicator[aria-current="true"],
+.carousel__indicator[aria-current="true"],
+[data-carousel-indicator][aria-current="true"],
+.carousel-indicator button.active,
+.carousel__indicator button.active,
+.carousel-indicator button[aria-current="true"],
+.carousel__indicator button[aria-current="true"] {
+  background: #fff;
+  box-shadow: 0 0 0 2px #3332, 0 2px 8px #0001;
 }

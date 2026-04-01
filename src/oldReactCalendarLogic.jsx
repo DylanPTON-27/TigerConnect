@@ -1,24 +1,6 @@
-import { useState, useEffect } from 'react'
-import './App.css'
-import FullCalendar from '@fullcalendar/react'
-import timeGridPlugin from '@fullcalendar/timegrid'
-import iCalendarPlugin from '@fullcalendar/icalendar'; 
 import ICAL from 'ical.js';
-import { styled } from '@mui/material/styles';
-import Button from '@mui/material/Button';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import Header from './components/Header'
 
-function App() {
-  const [currentTime, setCurrentTime] = useState(0);
-
-  useEffect(() => {
-    fetch('/api/time').then(res => res.json()).then(data => {
-      setCurrentTime(data.time);
-    });
-  }, []);
-
-  const [events, setEvents] = useState([]);
+const [events, setEvents] = useState([]);
 
   useEffect(() => {
     async function loadIcsFromApi() {
@@ -85,47 +67,3 @@ function App() {
       console.log(error);
     }
   };
-
-  return (
-    <>
-       <Header />
-
-      <FullCalendar
-        plugins={[timeGridPlugin]}
-        height={600}
-        initialView="timeGridWeek"
-        nowIndicator='true'
-        events={events}
-      />
-
-      <br/>
-
-      <Button
-        component="label"
-        role={undefined}
-        variant="contained"
-        tabIndex={-1}
-        startIcon={<CloudUploadIcon />}
-      >
-        Upload files
-        <VisuallyHiddenInput
-          type="file"
-          onChange={(event) => uploadFile(event.target.files[0])}
-          single
-        />
-      </Button>
-
-
-      <div className="card">
-
-        <p>The current time is {new Date(currentTime * 1000).toLocaleString()}.</p>
-        
-      </div>
-      <p className="read-the-docs">
-        TigerConnect is currently in development.
-      </p>
-    </>
-  )
-}
-
-export default App
