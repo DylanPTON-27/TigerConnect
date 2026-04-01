@@ -5,9 +5,14 @@ import time
 from flask import Flask, make_response, request
 import psycopg as pg
 import io
+from models import db 
+import os 
 
 app = Flask(__name__)
-
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "friends.db")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False 
+db.init_app(app)
 # Friends Route Import
 from routes.friends import friends_bp
 app.register_blueprint(friends_bp, url_prefix="/friends")
