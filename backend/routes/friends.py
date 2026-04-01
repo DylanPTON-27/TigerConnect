@@ -1,5 +1,6 @@
-from flask import Blueprint
+from flask import Blueprint, request
 from flask import jsonify
+from models import db, FriendRequest, Friendship, Activity
 
 # Create Blueprint
 friends_bp = Blueprint("friends", __name__)
@@ -59,8 +60,8 @@ def accept():
 
 
     db.session.delete(FriendRequest(sender_id=sender, receiver_id=receiver))
-    db.session.add(FriendShip(user_id=sender,friend_id=receiver))
-    db.session.add(FriendShip(user_id=receiver,friend_id=sender))
+    db.session.add(Friendship(user_id=sender,friend_id=receiver))
+    db.session.add(Friendship(user_id=receiver,friend_id=sender))
     db.session.commit()
     return {"message": "friendship request accepted"}
 

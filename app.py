@@ -1,13 +1,16 @@
+import sys
+import os
+sys.path.append(os.path.join(os.curdir, "backend"))
 import time
 from flask import Flask, make_response, request
 import psycopg as pg
 import io
 
+app = Flask(__name__)
+
 # Friends Route Import
 from routes.friends import friends_bp
 app.register_blueprint(friends_bp, url_prefix="/friends")
-
-app = Flask(__name__)
 
 @app.route('/api/time')
 def get_current_time():
