@@ -11,12 +11,15 @@ class User(db.Model):
 
 # Friend Requests
 class FriendRequest(db.Model):
-    sender_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False,primary_key = True)
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False)
     receiver_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+
 # Friendship Status
 class Friendship(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False, primary_key = True)
     friend_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False)
 
