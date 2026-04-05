@@ -18,7 +18,7 @@
 
 <svelte:head>
 	<script>
-		document.documentElement.setAttribute('data-mode', localStorage.getItem('mode') || 'dark');
+		document.documentElement.setAttribute('data-mode', localStorage.getItem('mode') || 'light');
 	</script>
 </svelte:head>
 

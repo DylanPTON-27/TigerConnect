@@ -5,7 +5,7 @@
 
 <div>
 <Carousel slideCount={2} slidesPerPage={1} spacing="16px">
-	<Carousel.ItemGroup class='h-[80vh] w-[60vw]'>
+	<Carousel.ItemGroup class='h-[80vh] w-[70vw]'>
 		<Carousel.Item index={0}>
 			<Calendar />
 		</Carousel.Item>
@@ -18,7 +18,7 @@
 		<Carousel.Context>
 			{#snippet children(carousel)}
 				{#each carousel().pageSnapPoints as _, index}
-					<Carousel.Indicator {index}/>
+					<Carousel.Indicator {index} class='h-6 w-6 border-2 ml-0.75 mr-0.75'/>
 				{/each}
 			{/snippet}
 		</Carousel.Context>
