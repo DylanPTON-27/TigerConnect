@@ -16,7 +16,6 @@ class FriendRequest(db.Model):
     receiver_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-
 # Friendship Status
 class Friendship(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -28,3 +27,27 @@ class Activity(db.Model):
     user_id = db.Column(db.String, db.ForeignKey("user.netid"), primary_key=True)
     is_active = db.Column(db.Boolean, default=False)
     expires_at = db.Column(db.DateTime)
+
+# Calendar OAuth account (Google)
+class CalendarAccount(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False, unique=True)
+    provider = db.Column(db.String(20), nullable=False, default="google")
+    access_token = db.Column(db.Text, nullable=False)
+    refresh_token = db.Column(db.Text, nullable=True)
+    expires_at = db.Column(db.DateTime, nullable=True)
+
+# Normalized calendar events
+class CalendarEvent(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False, index=True)
+    provider_event_id = db.Column(db.String(255), nullable=False, index=True)
+    title = db.Column(db.String(255))
+    start_utc = db.Column(db.DateTime, nullable=False, index=True)
+    end_utc = db.Column(db.DateTime, nullable=False, index=True)
+    timezone = db.Column(db.String(64))
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "provider_event_id", name="uq_user_event"),
+    )
