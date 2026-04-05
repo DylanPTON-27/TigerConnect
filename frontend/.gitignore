@@ -13,9 +13,6 @@ venv/
 __pycache__/
 *.pyc
 
-# Env
-.env
-
 # Editor
 .vscode/*
 !.vscode/extensions.json
