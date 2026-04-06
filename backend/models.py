@@ -51,3 +51,9 @@ class CalendarEvent(db.Model):
     __table_args__ = (
         db.UniqueConstraint("user_id", "provider_event_id", name="uq_user_event"),
     )
+
+# AuthNonce handoff
+class AuthNonce(db.Model):
+    nonce = db.Column(db.String(64), primary_key=True)
+    username = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
