@@ -1,7 +1,6 @@
 <script>
 	import { Popover } from '@skeletonlabs/skeleton-svelte';
 	import { Bell, X, Check } from '@lucide/svelte';
-	import './css/header.css'
 
 	const links = [
 		{ label: 'Alice Fu', href: '/#', status: 'online'},
@@ -11,6 +10,28 @@
 	];
 </script>
 
+<style>
+	@import 'tailwindcss';
+	@custom-variant dark (&:where([data-mode=dark], [data-mode=dark] *));
+
+	button {
+		border-radius: 8px;
+		margin-right: 5px;
+		margin-left: 5px;
+		padding: 0.8em 1em;
+		font-size: 1em;
+		font-weight: 500;
+		font-family: inherit;
+		cursor: pointer;
+		transition: border-color 0.25s;
+		@apply bg-black dark:bg-white;
+		@apply text-white dark:text-black;
+	}
+	button:focus,
+	button:focus-visible {
+		outline: 4px auto -webkit-focus-ring-color;
+	}
+</style>
 
 <Popover>
 	<Popover.Trigger><Bell class="size-6" /></Popover.Trigger>

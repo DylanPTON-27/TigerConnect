@@ -5,7 +5,6 @@
     import { sidebarState } from '././sharedVars.svelte.js';
 	import Notifications from "./Notifications.svelte";
 	import Switch from "./Switch.svelte";
-	import './css/header.css'
 </script>
 
 <style>
@@ -37,13 +36,6 @@
 		@apply bg-transparent;
 		@apply text-black dark:text-white;
 	}
-
-	.x-icon {
-		outline: transparent;
-		padding: 0.5em 0.5em;
-		@apply bg-transparent;
-		@apply text-black dark:text-white;
-}
 </style>
 
 <AppBar class="bg-zinc-400 dark:bg-zinc-900 flex justify-center">

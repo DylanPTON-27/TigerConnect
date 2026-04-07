@@ -3,7 +3,6 @@
     import { sidebarState } from './sharedVars.svelte.js'; 
     import { Navigation } from '@skeletonlabs/skeleton-svelte';
     import './app.css'
-	import './css/header.css'
 
 
     const links = [
@@ -13,6 +12,36 @@
 		{ label: 'Dwight', href: '/#', status: 'online'},
 	];
 </script>
+
+<style>
+	@import 'tailwindcss';
+	@custom-variant dark (&:where([data-mode=dark], [data-mode=dark] *));
+
+	button {
+		border-radius: 8px;
+		margin-right: 5px;
+		margin-left: 5px;
+		padding: 0.8em 1em;
+		font-size: 1em;
+		font-weight: 500;
+		font-family: inherit;
+		cursor: pointer;
+		transition: border-color 0.25s;
+		@apply bg-black dark:bg-white;
+		@apply text-white dark:text-black;
+	}
+	button:focus,
+	button:focus-visible {
+		outline: 4px auto -webkit-focus-ring-color;
+	}
+
+	.x-icon {
+		outline: transparent;
+		padding: 0.5em 0.5em;
+		@apply bg-transparent;
+		@apply text-black dark:text-white;
+}
+</style>
 
 {#if sidebarState.sidebarOpen}
     <Navigation layout="sidebar" class="bg-zinc-300 dark:bg-zinc-800 grid grid-rows-[auto_1fr_auto] gap-4">
