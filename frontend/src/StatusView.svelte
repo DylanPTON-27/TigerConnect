@@ -1,6 +1,5 @@
 <script lang="ts">
   import Sidebar from "./Sidebar.svelte"
-  import Calendar from "./Calendar.svelte";
   import Header from "./Header.svelte";
 </script>
 
