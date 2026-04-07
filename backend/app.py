@@ -17,6 +17,10 @@ db.init_app(app)
 from routes.friends import friends_bp
 app.register_blueprint(friends_bp, url_prefix="/friends")
 
+# Calendar route import
+from routes.calendar import calendar_bp
+app.register_blueprint(calendar_bp, url_prefix="/calendar")
+
 @app.route('/api/time')
 def get_current_time():
     return {'time': time.time()}
