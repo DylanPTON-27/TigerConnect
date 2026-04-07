@@ -1,50 +1,33 @@
 <script>
     // @ts-ignore
-    import { CalendarIcon, MenuIcon, Bell } from '@lucide/svelte';
+    import { Menu } from '@lucide/svelte';
 	import { AppBar } from '@skeletonlabs/skeleton-svelte';
-    import Switch from "./Switch.svelte";
-    import { drawerState } from '././sharedVars.svelte.js';
+    import { sidebarState } from '././sharedVars.svelte.js';
+	import Notifications from "./Notifications.svelte";
+	import Switch from "./Switch.svelte";
+	import './css/header.css'
 </script>
 
-<style>
-	@import 'tailwindcss';
-	@custom-variant dark (&:where([data-mode=dark], [data-mode=dark] *));
-
-	button {
-		border-radius: 8px;
-		margin-right: 5px;
-		margin-left: 5px;
-		padding: 0.8em 1em;
-		font-size: 1em;
-		font-weight: 500;
-		font-family: inherit;
-		cursor: pointer;
-		transition: border-color 0.25s;
-		@apply bg-black dark:bg-white;
-		@apply text-white dark:text-black;
-	}
-	button:hover {
-		border-color: #646cff;
-	}
-	button:focus,
-	button:focus-visible {
-		outline: 4px auto -webkit-focus-ring-color;
-	}
-</style>
-
-<AppBar class="bg-zinc-100 dark:bg-zinc-900 h-[10vh] flex justify-center">
-	<AppBar.Toolbar class="grid-cols-[auto_1fr_auto]">
-		<AppBar.Lead>
-			<button type="button" class="btn-icon hover:preset-tonal" onclick={() => drawerState.toggleDrawers()}><MenuIcon /></button>
-            <!-- The above button is supposed to be status but idk what symbol to use -->
+<AppBar class="bg-zinc-400 dark:bg-zinc-900 flex justify-center">
+	<AppBar.Toolbar class="grid grid-cols-3 items-center">
+		<AppBar.Lead class="justify-self-start">
+			<button type="button" class="btn hover:preset-tonal" onclick={() => sidebarState.toggleSidebar()}><Menu class="size-6" /></button>
+			<a href = "/calendar.html">
+			<button type="button" class="btn hover:preset-tonal">Calendar</button>
+			</a>
+			<a href = "/">
+			<button type="button" class="btn hover:preset-tonal">Status</button>
+			</a>
 		</AppBar.Lead>
-		<AppBar.Headline>
-			<p class="text-2xl">TigerConnect</p>
+		<AppBar.Headline class="justify-self-center">
+			<a href = "/"><button type="button" class="Title">TigerConnect</button></a>
 		</AppBar.Headline>
-		<AppBar.Trail>
+		<AppBar.Trail class="justify-self-end">
             <Switch />
-			<button type="button" class="btn-icon hover:preset-tonal"><Bell class="size-6" /></button>
-			<button type="button" class="btn-icon hover:preset-tonal"><CalendarIcon class="size-6" /></button>
+			<Notifications />
+			<a href = "/landing.html">
+				<button type="button" class="btn hover:preset-tonal">Log Out</button>
+			</a>
 		</AppBar.Trail>
 	</AppBar.Toolbar>
 </AppBar>

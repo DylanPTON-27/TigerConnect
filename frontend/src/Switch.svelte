@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { Switch } from '@skeletonlabs/skeleton-svelte';
+	import { themeState } from './sharedVars.svelte.js';
 
 	let checked = $state(false);
 
 	$effect(() => {
 		const mode = localStorage.getItem('mode') || 'light';
 		checked = mode === 'dark';
+		themeState.themeIsDark = mode === 'dark';
 	});
 
 	const onCheckedChange = (event: { checked: boolean }) => {
@@ -13,6 +15,7 @@
 		document.documentElement.setAttribute('data-mode', mode);
 		localStorage.setItem('mode', mode);
 		checked = event.checked;
+		themeState.toggleTheme()
 	};
 </script>
 
