@@ -37,7 +37,30 @@
 		const day = datePart.slice(6, 8);
 		const hour = timePart.slice(0, 2);
 		const minute = timePart.slice(2, 4);
-		return `${year}-${month}-${day} ${hour}:${minute}`;
+		const second = timePart.slice(4, 6) || "00";
+		return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
+	}
+
+	function toTemporalStart(raw) {
+		if (!raw.includes("T")) {
+			return Temporal.PlainDate.from(formatDateOnly(raw));
+		}
+		const iso = formatDateTime(raw);
+		if (raw.endsWith("Z")) {
+			return Temporal.Instant.from(`${iso}Z`).toZonedDateTimeISO("US/Eastern");
+		}
+		return Temporal.ZonedDateTime.from(`${iso}[US/Eastern]`);
+	}
+
+	function toTemporalEnd(raw) {
+		if (!raw.includes("T")) {
+			return Temporal.PlainDate.from(formatDateOnly(raw));
+		}
+		const iso = formatDateTime(raw);
+		if (raw.endsWith("Z")) {
+			return Temporal.Instant.from(`${iso}Z`).toZonedDateTimeISO("US/Eastern");
+		}
+		return Temporal.ZonedDateTime.from(`${iso}[US/Eastern]`);
 	}
 
 	function parseIcsToScheduleXEvents(icsText) {
@@ -53,15 +76,11 @@
 			}
 			if (line === "END:VEVENT") {
 				if (current && current.dtstart && current.dtend) {
-					const startRaw = current.dtstart;
-					const endRaw = current.dtend;
-					const isAllDay = !startRaw.includes("T");
-
 					events.push({
 						id: current.uid || crypto.randomUUID(),
 						title: current.summary || "Untitled Event",
-						start: isAllDay ? formatDateOnly(startRaw) : formatDateTime(startRaw),
-						end: isAllDay ? formatDateOnly(endRaw) : formatDateTime(endRaw),
+						start: toTemporalStart(current.dtstart),
+						end: toTemporalEnd(current.dtend),
 					});
 				}
 				current = null;
