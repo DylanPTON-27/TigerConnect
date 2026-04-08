@@ -1,5 +1,6 @@
 import sys
 import os
+from urllib.parse import urlsplit
 sys.path.append(os.path.join(os.curdir, "backend"))
 import time
 from flask import Flask, make_response, request
@@ -11,7 +12,12 @@ import datetime
 import flask_jwt_extended
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:5173"], supports_credentials=True)
+frontend_origin = os.getenv("FRONTEND_ORIGIN")
+if not frontend_origin:
+    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173/app.html")
+    parsed = urlsplit(frontend_url)
+    frontend_origin = f"{parsed.scheme}://{parsed.netloc}" if parsed.scheme and parsed.netloc else "http://localhost:5173"
+CORS(app, origins=[frontend_origin], supports_credentials=True)
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 # DB setup
@@ -24,7 +30,7 @@ db.init_app(app)
 
 # Friends Route Import
 from routes.friends import friends_bp
-CORS(friends_bp, origins=["http://localhost:5173"], supports_credentials=True)
+CORS(friends_bp, origins=[frontend_origin], supports_credentials=True)
 app.register_blueprint(friends_bp, url_prefix="/friends")
 
 # Calendar route import

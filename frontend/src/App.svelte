@@ -3,13 +3,14 @@
 	import Sidebar from "./Sidebar.svelte";
 	import Main from "./Main.svelte";
 	import Header from "./Header.svelte";
+	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
 	onMount(async () => {
 		const url = new URL(window.location.href);
 		const nonce = url.searchParams.get("nonce");
 		if (!nonce) return;
 
-		const res = await fetch(`/api/gettokens?nonce=${encodeURIComponent(nonce)}`);
+		const res = await fetch(`${API_BASE}/api/gettokens?nonce=${encodeURIComponent(nonce)}`);
 		if (!res.ok) return;
 
 		const [username, accessToken, refreshToken] = await res.json();

@@ -5,6 +5,8 @@
 	import { sidebarState } from "./sharedVars.svelte.js";
 	import Notifications from "./Notifications.svelte";
 	import Switch from "./Switch.svelte";
+
+	const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 </script>
 
 <AppBar class="bg-zinc-400 dark:bg-zinc-900 flex justify-center">
@@ -19,14 +21,14 @@
 			</button>
 		</AppBar.Lead>
 		<AppBar.Headline class="justify-self-center">
-			<a href="/">
+			<a href="/app.html">
 				<button type="button" class="Title">TigerConnect</button>
 			</a>
 		</AppBar.Headline>
 		<AppBar.Trail class="justify-self-end">
 			<Switch />
 			<Notifications />
-			<a href="http://localhost:8000/logoutapp">
+			<a href={`${API_BASE}/logoutapp`}>
 				<button type="button" class="btn hover:preset-tonal">Log Out</button>
 			</a>
 		</AppBar.Trail>

@@ -1,17 +1,29 @@
+import json
 import os
 import re
-import json
 import urllib.parse
 import urllib.request
+
 import flask
 import flask_jwt_extended
 
-from models import db, User, AuthNonce
+from models import AuthNonce, User, db
 
 auth_bp = flask.Blueprint("auth", __name__)
 
 CAS_URL = os.getenv("CAS_URL", "https://fed.princeton.edu/cas/")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173/app.html")
+
+
+def _frontend_landing_url() -> str:
+    parsed = urllib.parse.urlsplit(FRONTEND_URL)
+    path = parsed.path or "/"
+    if path.endswith("/app.html"):
+        path = path[: -len("/app.html")] or "/"
+    elif path.endswith("app.html"):
+        path = path[: -len("app.html")] or "/"
+    return urllib.parse.urlunsplit((parsed.scheme, parsed.netloc, path, "", ""))
+
 
 # Helper Functions
 def strip_ticket(url):
@@ -21,15 +33,22 @@ def strip_ticket(url):
     url = re.sub(r"\?&?$|&$", "", url)
     return url
 
+
 def validate(ticket):
-    val_url = (
-        CAS_URL + "validate"
-        + "?service=" + urllib.parse.quote(strip_ticket(flask.request.url))
-        + "&ticket=" + urllib.parse.quote(ticket)
-        + "&format=json"
-    )
-    with urllib.request.urlopen(val_url) as flo:
-        result = json.loads(flo.read().decode("utf-8"))
+    try:
+        val_url = (
+            CAS_URL
+            + "validate"
+            + "?service="
+            + urllib.parse.quote(strip_ticket(flask.request.url))
+            + "&ticket="
+            + urllib.parse.quote(ticket)
+            + "&format=json"
+        )
+        with urllib.request.urlopen(val_url, timeout=10) as flo:
+            result = json.loads(flo.read().decode("utf-8"))
+    except Exception:
+        return None
 
     if (not result) or ("serviceResponse" not in result):
         return None
@@ -38,6 +57,7 @@ def validate(ticket):
     if "authenticationSuccess" in sr:
         return sr["authenticationSuccess"]
     return None
+
 
 # Auth Routes
 @auth_bp.route("/login", methods=["GET"])
@@ -67,6 +87,7 @@ def login():
 
     return flask.redirect(f"{FRONTEND_URL}?nonce={nonce}")
 
+
 @auth_bp.route("/api/gettokens", methods=["GET"])
 def get_tokens():
     nonce = flask.request.args.get("nonce")
@@ -86,6 +107,7 @@ def get_tokens():
 
     return flask.jsonify([username, access_token, refresh_token])
 
+
 @auth_bp.route("/api/refreshaccesstoken", methods=["POST"])
 @flask_jwt_extended.jwt_required(refresh=True)
 def refresh_access_token():
@@ -93,6 +115,7 @@ def refresh_access_token():
     new_access = flask_jwt_extended.create_access_token(identity=username)
     return flask.jsonify(new_access)
 
+
 @auth_bp.route("/logoutapp", methods=["GET"])
 def logoutapp():
-    return flask.redirect("http://localhost:5173/")
+    return flask.redirect(f"{_frontend_landing_url()}?logout=1")

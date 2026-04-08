@@ -18,8 +18,8 @@ export default defineConfig({
 	build: {
     rolldownOptions: {
       input: {
-        main: resolve(import.meta.dirname, 'index.html'),
-        landing: resolve(import.meta.dirname, 'app.html'),
+        index: resolve(import.meta.dirname, 'index.html'),
+        app: resolve(import.meta.dirname, 'app.html'),
       },
     },
   },

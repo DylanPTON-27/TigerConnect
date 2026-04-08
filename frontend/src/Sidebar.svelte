@@ -5,22 +5,23 @@
 	import { Handshake, X } from "@lucide/svelte";
 	import "./app.css";
 
+	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 	let friends = [];
 
-	const userId = "Bob";
-
 	onMount(async () => {
-		const res = await fetch(
-			"http://localhost:8000/friends/get_all_friends",
-			{
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ user: userId }),
+		const token = sessionStorage.getItem("accessToken");
+		if (!token) return;
+
+		const res = await fetch(`${API_BASE}/friends/get_all_friends`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
 			},
-		);
+			body: JSON.stringify({}),
+		});
 		if (res.ok) {
-			const data = await res.json();
-			friends = data; // adjust if backend returns { friends: [...] }
+			friends = await res.json();
 		}
 	});
 </script>
@@ -51,8 +52,7 @@
 		<Navigation.Content>
 			{#each friends as friend}
 				<div class="flex items-center w-full min-w-0">
-					<span class="truncate">{friend}</span>
-					<!-- Optionally fetch and display status here -->
+					<span class="truncate">{Array.isArray(friend) ? friend[0] : friend}</span>
 				</div>
 			{/each}
 		</Navigation.Content>

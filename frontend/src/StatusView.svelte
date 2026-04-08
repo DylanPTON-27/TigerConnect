@@ -2,32 +2,40 @@
   import { onMount } from "svelte";
   import { Switch } from "@skeletonlabs/skeleton-svelte";
 
-  // Replace with actual user ID logic
-  const userId = "Bob";
-
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
   let checked = false;
 
-  // Fetch current status on mount
   onMount(async () => {
-    const res = await fetch("/friends/get_status", {
+    const token = sessionStorage.getItem("accessToken");
+    if (!token) return;
+
+    const res = await fetch(`${API_BASE}/friends/get_status`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user: userId }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({}),
     });
+
     if (res.ok) {
       const data = await res.json();
-      // Assuming backend returns { is_active: true/false } or just true/false
       checked = !!data.is_active || !!data;
     }
   });
 
-  // Update status when toggled
   async function handleToggle(details) {
     checked = details.checked;
-    await fetch("/friends/status_update", {
+    const token = sessionStorage.getItem("accessToken");
+    if (!token) return;
+
+    await fetch(`${API_BASE}/friends/status_update`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user: userId, active: checked }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ active: checked }),
     });
   }
 </script>

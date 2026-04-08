@@ -2,18 +2,29 @@
   import "./app.css";
   import { onMount } from "svelte";
 
-  const BACKEND_URL = "http://localhost:8000";
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
   onMount(() => {
-    sessionStorage.removeItem("username");
-    sessionStorage.removeItem("accessToken");
-    sessionStorage.removeItem("refreshToken");
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("logout") === "1") {
+      sessionStorage.removeItem("username");
+      sessionStorage.removeItem("accessToken");
+      sessionStorage.removeItem("refreshToken");
+      params.delete("logout");
+      const next = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`;
+      history.replaceState({}, "", next);
+      return;
+    }
+
+    if (sessionStorage.getItem("accessToken")) {
+      window.location.href = "/app.html";
+    }
   });
 </script>
 
 <main class="landing-background w-full grid items-stretch border border-surface-200-800">
   <div class="flex justify-center items-center">
-    <a href={`${BACKEND_URL}/login`}>
+    <a href={`${API_BASE}/login`}>
       <button type="button" class="btn preset-filled">Login Here</button>
     </a>
   </div>

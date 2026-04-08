@@ -2,6 +2,7 @@ import os
 import requests
 from datetime import datetime, timedelta, timezone
 from flask import Blueprint, request, jsonify, redirect
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, CalendarAccount, CalendarEvent
 
 calendar_bp = Blueprint("calendar", __name__)
@@ -20,10 +21,9 @@ def utc_dt(iso_str):
     return datetime.fromisoformat(iso_str.replace("Z", "+00:00")).astimezone(timezone.utc)
 
 @calendar_bp.route("/auth/start", methods=["GET"])
+@jwt_required()
 def auth_start():
-    user = request.args.get("user")
-    if not user:
-        return {"error": "missing user"}, 400
+    user = get_jwt_identity()
     params = {
         "client_id": GOOGLE_CLIENT_ID,
         "redirect_uri": GOOGLE_REDIRECT_URI,
@@ -86,9 +86,9 @@ def refresh_access_token(acct: CalendarAccount):
     return True
 
 @calendar_bp.route("/sync", methods=["POST"])
+@jwt_required()
 def sync_calendar():
-    data = request.json
-    user = data["user"]
+    user = get_jwt_identity()
     acct = CalendarAccount.query.filter_by(user_id=user).first()
     if not acct:
         return {"error": "calendar not connected"}, 400
@@ -153,6 +153,7 @@ def build_busy_blocks(events, window_start, window_end, minutes=30):
     return blocks
 
 @calendar_bp.route("/overlay", methods=["POST"])
+@jwt_required()
 def overlay():
     data = request.json
     users = data["users"]  # list of netids
@@ -180,6 +181,7 @@ def overlay():
     return jsonify(results)
 
 @calendar_bp.route("/suggest", methods=["POST"])
+@jwt_required()
 def suggest():
     data = request.json
     users = data["users"]
