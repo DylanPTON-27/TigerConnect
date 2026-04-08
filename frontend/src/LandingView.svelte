@@ -1,6 +1,6 @@
 <script>
 	import "./app.css";
-	const BACKEND_URL = "http://localhost:8000"; // change later
+	const BACKEND_URL = "http://localhost:8000"; // change to render url for prod
 </script>
 
 <main
