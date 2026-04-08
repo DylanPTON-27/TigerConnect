@@ -159,7 +159,7 @@ def overlay():
     window_days = data.get("days", 7)
     minutes = data.get("minutes", 30)
 
-    now = datetime.utcnow()
+    now = datetime.now()
     window_start = now.replace(minute=0, second=0, microsecond=0)
     window_end = window_start + timedelta(days=window_days)
 
@@ -186,7 +186,7 @@ def suggest():
     window_days = data.get("days", 7)
     minutes = data.get("minutes", 30)
 
-    now = datetime.utcnow()
+    now = datetime.now()
     window_start = now.replace(minute=0, second=0, microsecond=0)
     window_end = window_start + timedelta(days=window_days)
 

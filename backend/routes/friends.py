@@ -1,6 +1,7 @@
 from flask import Blueprint, request
 from flask import jsonify
 from models import db, FriendRequest, Friendship, Activity
+import datetime
 
 # Create Blueprint
 friends_bp = Blueprint("friends", __name__)
@@ -117,29 +118,3 @@ def get_status():
         db.session.commit()
     return jsonify(True)
    
-
-
-
-
-
-
-
-
-
-    
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-

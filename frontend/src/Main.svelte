@@ -1,15 +1,18 @@
 <script lang="ts">
 	import { Carousel } from "@skeletonlabs/skeleton-svelte";
 	import Calendar from "./Calendar.svelte";
+	import StatusView from "./StatusView.svelte";
 </script>
 
 <Carousel slideCount={2} slidesPerPage={1} spacing="16px">
 	<Carousel.ItemGroup class="carousel">
 		<Carousel.Item index={0}>
-			<Calendar />
+			<StatusView />
 		</Carousel.Item>
 
-		<Carousel.Item index={1}>Other Page</Carousel.Item>
+		<Carousel.Item index={1}>
+			<Calendar />
+		</Carousel.Item>
 	</Carousel.ItemGroup>
 	<Carousel.IndicatorGroup>
 		<Carousel.Context>
@@ -27,8 +30,7 @@
 	@custom-variant dark (&:where([data-mode=dark], [data-mode=dark] *));
 
 	:global(.carousel) {
-		@apply h-[80vh] w-[70vw];
-		@apply m-auto;
+		@apply h-auto w-full;
 	}
 
 	:global(.indicators) {
