@@ -19,7 +19,7 @@ export default defineConfig({
     rolldownOptions: {
       input: {
         main: resolve(import.meta.dirname, 'index.html'),
-        landing: resolve(import.meta.dirname, 'landing.html'),
+        landing: resolve(import.meta.dirname, 'app.html'),
       },
     },
   },

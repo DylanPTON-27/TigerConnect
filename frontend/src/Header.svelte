@@ -26,10 +26,8 @@
 		<AppBar.Trail class="justify-self-end">
 			<Switch />
 			<Notifications />
-			<a href="/landing.html">
-				<button type="button" class="btn hover:preset-tonal"
-					>Log Out</button
-				>
+			<a href="http://localhost:8000/logoutapp">
+				<button type="button" class="btn hover:preset-tonal">Log Out</button>
 			</a>
 		</AppBar.Trail>
 	</AppBar.Toolbar>

@@ -11,7 +11,7 @@ from models import db, User, AuthNonce
 auth_bp = flask.Blueprint("auth", __name__)
 
 CAS_URL = os.getenv("CAS_URL", "https://fed.princeton.edu/cas/")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173/app.html")
 
 # Helper Functions
 def strip_ticket(url):
@@ -65,8 +65,7 @@ def login():
     db.session.add(AuthNonce(nonce=nonce, username=username))
     db.session.commit()
 
-    return flask.redirect(f"{FRONTEND_URL}/?nonce={nonce}")
-
+    return flask.redirect(f"{FRONTEND_URL}?nonce={nonce}")
 
 @auth_bp.route("/api/gettokens", methods=["GET"])
 def get_tokens():
@@ -87,7 +86,6 @@ def get_tokens():
 
     return flask.jsonify([username, access_token, refresh_token])
 
-
 @auth_bp.route("/api/refreshaccesstoken", methods=["POST"])
 @flask_jwt_extended.jwt_required(refresh=True)
 def refresh_access_token():
@@ -97,4 +95,4 @@ def refresh_access_token():
 
 @auth_bp.route("/logoutapp", methods=["GET"])
 def logoutapp():
-    return flask.redirect(f"{FRONTEND_URL}/logout")
+    return flask.redirect("http://localhost:5173/")
