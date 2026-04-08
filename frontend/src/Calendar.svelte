@@ -13,6 +13,7 @@
 
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 	let statusMessage = "";
+	let calendarRenderKey = 0;
 	let calendarApp = createCalendar({
 		views: [createViewDay(), createViewWeek()],
 		events: [],
@@ -20,6 +21,12 @@
 		isDark: themeState.themeIsDark,
 		plugins: [createCurrentTimePlugin()],
 	});
+
+	function toPlainDate(dateLike) {
+		if (!dateLike) return Temporal.Now.plainDateISO("US/Eastern");
+		if (dateLike instanceof Temporal.PlainDate) return dateLike;
+		return dateLike.toPlainDate();
+	}
 
 	function formatDateOnly(raw) {
 		const year = raw.slice(0, 4);
@@ -116,14 +123,19 @@
 			}
 			const icsText = await res.text();
 			const parsedEvents = parseIcsToScheduleXEvents(icsText);
+			const selectedDate = parsedEvents.length > 0
+				? toPlainDate(parsedEvents[0].start)
+				: Temporal.Now.plainDateISO("US/Eastern");
 
 			calendarApp = createCalendar({
 				views: [createViewDay(), createViewWeek()],
 				events: parsedEvents,
+				selectedDate,
 				timezone: "US/Eastern",
 				isDark: themeState.themeIsDark,
 				plugins: [createCurrentTimePlugin()],
 			});
+			calendarRenderKey += 1;
 			statusMessage = `Loaded ${parsedEvents.length} events from latest upload.`;
 		} catch (err) {
 			console.error(err);
@@ -168,7 +180,9 @@
 	{/if}
 </div>
 
-<ScheduleXCalendar {calendarApp} />
+{#key calendarRenderKey}
+	<ScheduleXCalendar {calendarApp} />
+{/key}
 
 <style>
 	:global(.sx-svelte-calendar-wrapper) {
