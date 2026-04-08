@@ -5,9 +5,7 @@ from models import db, FriendRequest, Friendship, Activity
 # Create Blueprint
 friends_bp = Blueprint("friends", __name__)
 
-# Friend Requests
-# SIDE ISSUE FIX POTENTIAL ADD USER AUTHENTICATION 
-# E.g. someone wants to friend someone else but they do it on someone's behalf this shouldn't occur 
+
 @friends_bp.route("/request", methods=["POST"])
 def send_request():
     data = request.json
@@ -88,21 +86,37 @@ def status_update():
     status_object=Activity.query.filter_by(user_id=user_id)
     if active:       
         status_object.is_active=False
+        status_object.expires_at=datetime.utcnow()
     else:
         status_object.is_active=True
+        status_object.expires_at=datetime.utcnow() + timedelta(hours=1)
+
     db.session.commit()
     return {"message": "Activity Status Updated"}
 
 
-# So add conditional to check time if time is ahead change to inactive 
+@friends_bp.route("/get_active_friends", methods=["POST"])
+def get_active_friends():
+    data = request.json
+    user_id = data['user']
+    solely_users=Friendship.query.filter_by(user_id=user_id)
+    joined_table = solely_users.join(Activity,Friendship.friend_id == Activity.user_id)
+    active_friend_ids=joined_table.session.query(friend_id).all()
+    return jsonify(all_friends_ids)
+
+
+
+
 @friends_bp.route("/get_status", methods=["POST"])
 def get_status():
     data = request.json 
     user_id = data["user"]
-    activity_status= FriendRequest.session.query(FriendRequest.user_id).filter_by(
-    user_id=user_id
-    ).first()
-    return jsonify(activity_status)
+    status_object=Activity.query.filter_by(user_id=user_id).first()
+    if status_object.expires_at<datetime.utcnow():
+        status_object.is_active=False
+        db.session.commit()
+    return jsonify(True)
+   
 
 
 
