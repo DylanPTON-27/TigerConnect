@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
+from sqlalchemy.exc import IntegrityError
 
 from .models import Activity, FriendRequest, Friendship, User, db
 
@@ -62,8 +63,8 @@ def get_all_friends():
 @jwt_required()
 def accept():
     data = request.get_json(silent=True) or {}
-    sender = data.get("sender")
-    receiver = get_jwt_identity()
+    sender = (data.get("sender") or "").strip().lower()
+    receiver = (get_jwt_identity() or "").strip().lower()
     if not sender:
         return {"error": "missing sender"}, 400
 
@@ -71,13 +72,29 @@ def accept():
     if not to_delete:
         return {"error": "request not found"}, 404
 
+    # Ensure users exist (defensive for old/partial data states).
+    sender_user = User.query.filter_by(netid=sender).first()
+    if not sender_user:
+        db.session.add(User(netid=sender, name=sender, email=f"{sender}@princeton.edu"))
+    receiver_user = User.query.filter_by(netid=receiver).first()
+    if not receiver_user:
+        db.session.add(User(netid=receiver, name=receiver, email=f"{receiver}@princeton.edu"))
+
+    existing_forward = Friendship.query.filter_by(user_id=sender, friend_id=receiver).first()
+    existing_reverse = Friendship.query.filter_by(user_id=receiver, friend_id=sender).first()
+
     db.session.delete(to_delete)
-    friendships = [
-        Friendship(user_id=sender, friend_id=receiver),
-        Friendship(user_id=receiver, friend_id=sender),
-    ]
-    db.session.add_all(friendships)
-    db.session.commit()
+    if not existing_forward:
+        db.session.add(Friendship(user_id=sender, friend_id=receiver))
+    if not existing_reverse:
+        db.session.add(Friendship(user_id=receiver, friend_id=sender))
+
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return {"error": "failed to accept request due to data integrity"}, 400
+
     return {"message": "friendship request accepted"}
 
 

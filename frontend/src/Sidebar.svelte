@@ -57,7 +57,15 @@
 		}
 	}
 
-	onMount(loadFriends);
+	function handleFriendsChanged() {
+		void loadFriends();
+	}
+
+	onMount(() => {
+		void loadFriends();
+		window.addEventListener("friends:changed", handleFriendsChanged);
+		return () => window.removeEventListener("friends:changed", handleFriendsChanged);
+	});
 </script>
 
 {#if sidebarState.sidebarOpen}
