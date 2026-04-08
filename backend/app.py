@@ -6,7 +6,8 @@ from flask import Flask, make_response, request
 import psycopg as pg
 import io
 from models import db 
-import os 
+import datetime
+import flask_jwt_extended
 
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -20,6 +21,16 @@ app.register_blueprint(friends_bp, url_prefix="/friends")
 # Calendar route import
 from routes.calendar import calendar_bp
 app.register_blueprint(calendar_bp, url_prefix="/calendar")
+
+# Auth setup
+app.config["JWT_SECRET_KEY"] = os.getenv("APP_SECRET_KEY", "change-me")
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(hours=1)
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = datetime.timedelta(days=1)
+jwt = flask_jwt_extended.JWTManager(app)
+
+# Auth imports
+from routes.auth import auth_bp
+app.register_blueprint(auth_bp)
 
 @app.route('/api/time')
 def get_current_time():
