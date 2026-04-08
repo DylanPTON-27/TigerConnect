@@ -1,4 +1,5 @@
 <script>
+	import "temporal-polyfill/global";
 	import { onMount } from "svelte";
 	import { ScheduleXCalendar } from "@schedule-x/svelte";
 	import {
@@ -9,7 +10,6 @@
 	import { themeState } from "./sharedVars.svelte.js";
 	import { createCurrentTimePlugin } from "@schedule-x/current-time";
 	import "@schedule-x/theme-default/dist/index.css";
-	import "temporal-polyfill/global";
 
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 	let statusMessage = "";
@@ -101,7 +101,8 @@
 			});
 			statusMessage = `Loaded ${parsedEvents.length} events from latest upload.`;
 		} catch (err) {
-			statusMessage = "Failed to load calendar.";
+			console.error(err);
+			statusMessage = `Failed to load calendar: ${err?.message || err}`;
 		}
 	}
 
