@@ -21,7 +21,6 @@ def strip_ticket(url):
     url = re.sub(r"\?&?$|&$", "", url)
     return url
 
-
 def validate(ticket):
     val_url = (
         CAS_URL + "validate"

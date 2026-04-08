@@ -1,12 +1,9 @@
 from flask import Blueprint, request
 from flask import jsonify
 from models import db, FriendRequest, Friendship, Activity
-<<<<<<< HEAD
 from datetime import datetime, timedelta
 from flask_jwt_extended import jwt_required, get_jwt_identity
-=======
 import datetime
->>>>>>> d5465e5 (fixed some layout issues)
 
 # Create Blueprint
 friends_bp = Blueprint("friends", __name__)
