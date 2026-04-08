@@ -27,6 +27,8 @@ if db_url and db_url.startswith("postgres://"):
 app.config["SQLALCHEMY_DATABASE_URI"] = db_url or ("sqlite:///" + os.path.join(basedir, "friends.db"))
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False 
 db.init_app(app)
+with app.app_context():
+    db.create_all()
 
 
 def _pg_conninfo() -> str:
