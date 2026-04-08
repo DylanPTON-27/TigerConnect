@@ -7,6 +7,7 @@
 
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 	let friends = [];
+	const DEMO_FRIENDS = ["ab1234", "xy9876", "jk4321"];
 	let receiverNetid = "";
 	let requestMessage = "";
 
@@ -28,6 +29,11 @@
 	}
 
 	onMount(async () => {
+		const username = (sessionStorage.getItem("username") || "").toLowerCase();
+		if (username === "cp5721") {
+			friends = DEMO_FRIENDS.map((id) => [id]);
+		}
+
 		await loadFriends();
 	});
 
