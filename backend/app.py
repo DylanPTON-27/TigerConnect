@@ -13,12 +13,15 @@ import flask_jwt_extended
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:5173"], supports_credentials=True)
 basedir = os.path.abspath(os.path.dirname(__file__))
+
+# DB setup
 db_url = os.getenv("DATABASE_URL")
 if db_url and db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 app.config["SQLALCHEMY_DATABASE_URI"] = db_url or ("sqlite:///" + os.path.join(basedir, "friends.db"))
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False 
 db.init_app(app)
+
 # Friends Route Import
 from routes.friends import friends_bp
 CORS(friends_bp, origins=["http://localhost:5173"], supports_credentials=True)
