@@ -1,15 +1,5 @@
 .venv/
 node_modules/*
-<<<<<<< HEAD
-__pycache__/
-*.pyc
-.vscode
-__pycache__/
-*.pyc
-
-__pycache__/
-=======
-__pycache__*
->>>>>>> d5465e5 (fixed some layout issues)
+__pycache__
 *.pyc
 .vscode
