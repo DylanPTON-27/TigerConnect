@@ -1,4 +1,5 @@
 <script>
+	import "temporal-polyfill/global";
 	import { onMount } from "svelte";
 	import { ScheduleXCalendar } from "@schedule-x/svelte";
 	import {
@@ -9,10 +10,10 @@
 	import { themeState } from "./sharedVars.svelte.js";
 	import { createCurrentTimePlugin } from "@schedule-x/current-time";
 	import "@schedule-x/theme-default/dist/index.css";
-	import "temporal-polyfill/global";
 
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 	let statusMessage = "";
+	let calendarRenderKey = 0;
 	let calendarApp = createCalendar({
 		views: [createViewDay(), createViewWeek()],
 		events: [],
@@ -20,6 +21,12 @@
 		isDark: themeState.themeIsDark,
 		plugins: [createCurrentTimePlugin()],
 	});
+
+	function toPlainDate(dateLike) {
+		if (!dateLike) return Temporal.Now.plainDateISO("US/Eastern");
+		if (dateLike instanceof Temporal.PlainDate) return dateLike;
+		return dateLike.toPlainDate();
+	}
 
 	function formatDateOnly(raw) {
 		const year = raw.slice(0, 4);
@@ -37,7 +44,36 @@
 		const day = datePart.slice(6, 8);
 		const hour = timePart.slice(0, 2);
 		const minute = timePart.slice(2, 4);
-		return `${year}-${month}-${day} ${hour}:${minute}`;
+		const second = timePart.slice(4, 6) || "00";
+		return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
+	}
+
+	function toTemporalStart(raw) {
+		if (!raw.includes("T")) {
+			return Temporal.PlainDate.from(formatDateOnly(raw));
+		}
+		const iso = formatDateTime(raw);
+		if (raw.endsWith("Z")) {
+			return Temporal.Instant.from(`${iso}Z`).toZonedDateTimeISO("US/Eastern");
+		}
+		return Temporal.ZonedDateTime.from(`${iso}[US/Eastern]`);
+	}
+
+	function toTemporalEnd(raw) {
+		if (!raw.includes("T")) {
+			return Temporal.PlainDate.from(formatDateOnly(raw));
+		}
+		const iso = formatDateTime(raw);
+		if (raw.endsWith("Z")) {
+			return Temporal.Instant.from(`${iso}Z`).toZonedDateTimeISO("US/Eastern");
+		}
+		return Temporal.ZonedDateTime.from(`${iso}[US/Eastern]`);
+	}
+
+	function makeSafeEventId(rawId) {
+		const base = (rawId || crypto.randomUUID()).toString();
+		const safe = base.replace(/[^A-Za-z0-9_-]/g, "_");
+		return `ev_${safe}`;
 	}
 
 	function parseIcsToScheduleXEvents(icsText) {
@@ -53,15 +89,11 @@
 			}
 			if (line === "END:VEVENT") {
 				if (current && current.dtstart && current.dtend) {
-					const startRaw = current.dtstart;
-					const endRaw = current.dtend;
-					const isAllDay = !startRaw.includes("T");
-
 					events.push({
-						id: current.uid || crypto.randomUUID(),
+						id: makeSafeEventId(current.uid),
 						title: current.summary || "Untitled Event",
-						start: isAllDay ? formatDateOnly(startRaw) : formatDateTime(startRaw),
-						end: isAllDay ? formatDateOnly(endRaw) : formatDateTime(endRaw),
+						start: toTemporalStart(current.dtstart),
+						end: toTemporalEnd(current.dtend),
 					});
 				}
 				current = null;
@@ -91,17 +123,23 @@
 			}
 			const icsText = await res.text();
 			const parsedEvents = parseIcsToScheduleXEvents(icsText);
+			const selectedDate = parsedEvents.length > 0
+				? toPlainDate(parsedEvents[0].start)
+				: Temporal.Now.plainDateISO("US/Eastern");
 
 			calendarApp = createCalendar({
 				views: [createViewDay(), createViewWeek()],
 				events: parsedEvents,
+				selectedDate,
 				timezone: "US/Eastern",
 				isDark: themeState.themeIsDark,
 				plugins: [createCurrentTimePlugin()],
 			});
+			calendarRenderKey += 1;
 			statusMessage = `Loaded ${parsedEvents.length} events from latest upload.`;
 		} catch (err) {
-			statusMessage = "Failed to load calendar.";
+			console.error(err);
+			statusMessage = `Failed to load calendar: ${err?.message || err}`;
 		}
 	}
 
@@ -142,7 +180,9 @@
 	{/if}
 </div>
 
-<ScheduleXCalendar {calendarApp} />
+{#key calendarRenderKey}
+	<ScheduleXCalendar {calendarApp} />
+{/key}
 
 <style>
 	:global(.sx-svelte-calendar-wrapper) {
