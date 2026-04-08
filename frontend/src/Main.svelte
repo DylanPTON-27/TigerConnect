@@ -7,7 +7,9 @@
 <Carousel slideCount={2} slidesPerPage={1} spacing="16px">
 	<Carousel.ItemGroup class="carousel">
 		<Carousel.Item index={0}>
-			<StatusView />
+			<div class="flex justify-center h-full">
+				<StatusView />
+			</div>
 		</Carousel.Item>
 
 		<Carousel.Item index={1}>

@@ -1,18 +1,42 @@
 <script lang="ts">
+  import { Switch } from "@skeletonlabs/skeleton-svelte";
+
+  let checked = $state(false);
 </script>
 
-<div>
-  <p>Status Page WIP.</p>
-  <p>Click on Calendar at top for more fleshed out Calendar Page.</p>
-  <p>Menu Icon in top left works only in Calendar view right now.</p>
-  <p>TigerConnect redirects to here.</p>
-  <p>
-    Toggle Light/Dark is setup but isn't connected to the actual calendar in
-    Calendar.svelte
-  </p>
-  <p>Notifcations view should be pretty much done.</p>
-  <p>
-    Log out just redirects to a landing page that only has a login button. Needs
-    to be connected to CAS auth.
-  </p>
+<div class="h-full w-[95%]">
+  <div class="grid grid-flow-col grid-rows-3 gap-4 h-[95%] m-auto">
+    <div class="row-span-3 card">
+      <div>
+        <h1>Status</h1>
+
+        <br />
+        <br />
+
+        <Switch
+          {checked}
+          onCheckedChange={(details) => (checked = details.checked)}
+        >
+          <Switch.Label class="h5">{checked ? "Free" : "Busy"}</Switch.Label>
+          <Switch.Control class="bg-red-600 data-[state=checked]:bg-green-700">
+            <Switch.Thumb />
+          </Switch.Control>
+          <Switch.HiddenInput />
+        </Switch>
+      </div>
+    </div>
+    <div class="col-span-2 card">02</div>
+    <div class="col-span-2 row-span-2 card">03</div>
+  </div>
 </div>
+
+<style>
+  @import "tailwindcss";
+  @custom-variant dark (&:where([data-mode=dark], [data-mode=dark] *));
+
+  .card {
+    @apply m-1 h-full w-full;
+    @apply border rounded-lg;
+    @apply flex justify-center items-center;
+  }
+</style>

@@ -1,17 +1,79 @@
 <script>
-	import { Popover } from '@skeletonlabs/skeleton-svelte';
-	import { Bell, X, Check } from '@lucide/svelte';
+	import { onMount } from "svelte";
+	import { Popover } from "@skeletonlabs/skeleton-svelte";
+	import { Bell, X, Check } from "@lucide/svelte";
 
-	const links = [
-		{ label: 'Alice Fu', href: '/#', status: 'online'},
-		{ label: 'Bob', href: '/#', status: 'online'},
-		{ label: 'Charlie', href: '/#', status: 'online'},
-		{ label: 'Dwight', href: '/#', status: 'online'},
-	];
+	let requests = [];
+
+	const userId = "Bob";
+
+	onMount(async () => {
+		const res = await fetch("http://localhost:8000/friends/notifications", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ user: userId }),
+		});
+		if (res.ok) {
+			const data = await res.json();
+			requests = data; // adjust if backend returns { requests: [...] }
+		}
+	});
 </script>
 
+<Popover>
+	<Popover.Trigger><Bell class="size-6" /></Popover.Trigger>
+	<Popover.Positioner class="z-1!">
+		<Popover.Content class="card w-96 p-4 bg-surface-100-900 shadow-xl">
+			<div class="space-y-4">
+				<header
+					class="grid grid-cols-[auto_1fr_auto] gap-4 items-center"
+				>
+					<div>
+						<Bell class="size-6" />
+					</div>
+					<div>
+						<Popover.Title class="text-lg font-bold"
+							>Notifications</Popover.Title
+						>
+						<p>(Incoming Friend Requests)</p>
+					</div>
+					<Popover.CloseTrigger class="x-icon hover:preset-tonal">
+						<X class="size-4" />
+					</Popover.CloseTrigger>
+				</header>
+				<hr class="hr border-t-4 border-primary-500" />
+				{#each requests as senderId}
+					<div
+						class="grid grid-cols-[1fr_auto_auto] gap-4 items-center"
+					>
+						<div>
+							<span class="underline">{senderId}</span> wants to be
+							your friend
+						</div>
+						<div>
+							<button class="btn-icon preset-filled"
+								><Check class="size-6" /></button
+							>
+						</div>
+						<div>
+							<button class="btn-icon preset-filled"
+								><X class="size-6" /></button
+							>
+						</div>
+					</div>
+				{/each}
+			</div>
+			<Popover.Arrow
+				class="[--arrow-size:--spacing(2)] [--arrow-background:var(--color-surface-100-900)]"
+			>
+				<Popover.ArrowTip />
+			</Popover.Arrow>
+		</Popover.Content>
+	</Popover.Positioner>
+</Popover>
+
 <style>
-	@import 'tailwindcss';
+	@import "tailwindcss";
 	@custom-variant dark (&:where([data-mode=dark], [data-mode=dark] *));
 
 	button {
@@ -32,36 +94,3 @@
 		outline: 4px auto -webkit-focus-ring-color;
 	}
 </style>
-
-<Popover>
-	<Popover.Trigger><Bell class="size-6" /></Popover.Trigger>
-		<Popover.Positioner class="z-1!">
-			<Popover.Content class="card w-96 p-4 bg-surface-100-900 shadow-xl">
-				<div class="space-y-4">
-					<header class="grid grid-cols-[auto_1fr_auto] gap-4 items-center">
-						<div>
-							<Bell class="size-6" />
-						</div>
-						<div>
-							<Popover.Title class="text-lg font-bold">Notifications</Popover.Title>
-							<p>(Incoming Friend Requests)</p>
-						</div>
-						<Popover.CloseTrigger class="x-icon hover:preset-tonal">
-							<X class="size-4" />
-						</Popover.CloseTrigger>
-					</header>
-					<hr class="hr border-t-4 border-primary-500" />
-					{#each links as link (link)}
-						<div class="grid grid-cols-[1fr_auto_auto] gap-4 items-center">
-							<div> <span class="underline">{link.label}</span> wants to be your friend</div>
-							<div> <button class="btn-icon preset-filled"><Check class="size-6" /></button></div>
-							<div> <button class="btn-icon preset-filled"><X class="size-6" /></button></div>
-						</div>
-					{/each}
-				</div>
-				<Popover.Arrow class="[--arrow-size:--spacing(2)] [--arrow-background:var(--color-surface-100-900)]">
-					<Popover.ArrowTip />
-				</Popover.Arrow>
-			</Popover.Content>
-		</Popover.Positioner>
-</Popover>

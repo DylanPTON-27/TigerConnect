@@ -84,3 +84,11 @@ a {
   .sidenav {padding-top: 15px;}
   .sidenav a {font-size: 18px;}
 }
+
+h1 {
+  @apply h1;
+}
+
+h3 {
+  @apply h3;
+}

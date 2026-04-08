@@ -3,18 +3,21 @@ import os
 sys.path.append(os.path.join(os.curdir, "backend"))
 import time
 from flask import Flask, make_response, request
+from flask_cors import CORS
 import psycopg as pg
 import io
 from models import db 
 import os 
 
 app = Flask(__name__)
+CORS(app, origins=["http://localhost:5173"], supports_credentials=True)
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "friends.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False 
 db.init_app(app)
 # Friends Route Import
 from routes.friends import friends_bp
+CORS(friends_bp, origins=["http://localhost:5173"], supports_credentials=True)
 app.register_blueprint(friends_bp, url_prefix="/friends")
 
 # Calendar route import
@@ -25,7 +28,7 @@ app.register_blueprint(calendar_bp, url_prefix="/calendar")
 def get_current_time():
     return {'time': time.time()}
 
-@app.route('/api/calendar')
+@app.route('/api/calendar', methods=['POST'])
 def get_cal():
     with pg.connect("dbname=postgres user=postgres password=postgres") as conn:
         with conn.cursor() as cur:
