@@ -63,6 +63,12 @@
 		return Temporal.ZonedDateTime.from(`${iso}[US/Eastern]`);
 	}
 
+	function makeSafeEventId(rawId) {
+		const base = (rawId || crypto.randomUUID()).toString();
+		const safe = base.replace(/[^A-Za-z0-9_-]/g, "_");
+		return `ev_${safe}`;
+	}
+
 	function parseIcsToScheduleXEvents(icsText) {
 		const unfolded = icsText.replace(/\r?\n[ \t]/g, "");
 		const lines = unfolded.split(/\r?\n/);
@@ -77,7 +83,7 @@
 			if (line === "END:VEVENT") {
 				if (current && current.dtstart && current.dtend) {
 					events.push({
-						id: current.uid || crypto.randomUUID(),
+						id: makeSafeEventId(current.uid),
 						title: current.summary || "Untitled Event",
 						start: toTemporalStart(current.dtstart),
 						end: toTemporalEnd(current.dtend),
