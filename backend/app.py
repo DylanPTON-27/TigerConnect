@@ -7,12 +7,16 @@ from flask_cors import CORS
 import psycopg as pg
 import io
 from models import db 
-import os 
+import datetime
+import flask_jwt_extended
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:5173"], supports_credentials=True)
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "friends.db")
+db_url = os.getenv("DATABASE_URL")
+if db_url and db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+app.config["SQLALCHEMY_DATABASE_URI"] = db_url or ("sqlite:///" + os.path.join(basedir, "friends.db"))
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False 
 db.init_app(app)
 # Friends Route Import
@@ -23,6 +27,16 @@ app.register_blueprint(friends_bp, url_prefix="/friends")
 # Calendar route import
 from routes.calendar import calendar_bp
 app.register_blueprint(calendar_bp, url_prefix="/calendar")
+
+# Auth setup
+app.config["JWT_SECRET_KEY"] = os.getenv("APP_SECRET_KEY", "change-me")
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(hours=1)
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = datetime.timedelta(days=1)
+jwt = flask_jwt_extended.JWTManager(app)
+
+# Auth imports
+from routes.auth import auth_bp
+app.register_blueprint(auth_bp)
 
 @app.route('/api/time')
 def get_current_time():

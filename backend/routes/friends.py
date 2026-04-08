@@ -1,13 +1,14 @@
 from flask import Blueprint, request
 from flask import jsonify
 from models import db, FriendRequest, Friendship, Activity
-import datetime
+from datetime import datetime, timedelta
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 # Create Blueprint
 friends_bp = Blueprint("friends", __name__)
 
-
 @friends_bp.route("/request", methods=["POST"])
+@jwt_required()
 def send_request():
     data = request.json
     sender = data["sender"]
@@ -30,6 +31,7 @@ def send_request():
     return {"message": "request sent"}
 
 @friends_bp.route("/notifications", methods=["POST"])
+@jwt_required()
 def notifications():
     data = request.json
     receiver = data["user"]
@@ -39,6 +41,7 @@ def notifications():
     return jsonify(all_sender_ids)
 
 @friends_bp.route("/get_all_friends", methods=["POST"])
+@jwt_required()
 def get_all_friends():
     data = request.json
     user_id = data['user']
@@ -48,6 +51,7 @@ def get_all_friends():
 
 
 @friends_bp.route("/accept", methods=["POST"])
+@jwt_required()
 def accept():
     data = request.json
     sender = data["sender"]
@@ -67,6 +71,7 @@ def accept():
 
 
 @friends_bp.route("/reject", methods=["POST"])
+@jwt_required()
 def reject():
     data = request.json
     sender = data["sender"]
@@ -80,6 +85,7 @@ def reject():
     return {"message": "friendship request accepted"}
 
 @friends_bp.route("/status_update", methods=["POST"])
+@jwt_required()
 def status_update():
     data = request.json
     active=data["active"]
@@ -97,6 +103,7 @@ def status_update():
 
 
 @friends_bp.route("/get_active_friends", methods=["POST"])
+@jwt_required()
 def get_active_friends():
     data = request.json
     user_id = data['user']
@@ -109,6 +116,7 @@ def get_active_friends():
 
 
 @friends_bp.route("/get_status", methods=["POST"])
+@jwt_required()
 def get_status():
     data = request.json 
     user_id = data["user"]
