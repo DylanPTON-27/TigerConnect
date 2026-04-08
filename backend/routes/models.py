@@ -18,8 +18,8 @@ class FriendRequest(db.Model):
 
 # Friendship Status
 class Friendship(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False, primary_key = True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False)
     friend_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False)
 
 # Activity Status

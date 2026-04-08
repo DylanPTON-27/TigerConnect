@@ -6,8 +6,7 @@ import urllib.request
 
 import flask
 import flask_jwt_extended
-
-from models import AuthNonce, User, db
+from .models import db, User, AuthNonce
 
 auth_bp = flask.Blueprint("auth", __name__)
 

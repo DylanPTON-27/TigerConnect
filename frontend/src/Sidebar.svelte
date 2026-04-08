@@ -7,9 +7,8 @@
 
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 	let friends = [];
-	const DEMO_FRIENDS = ["ab1234", "xy9876", "jk4321"];
-	let receiverNetid = "";
-	let requestMessage = "";
+	let receiverNetid;
+	let requestMessage;
 
 	async function loadFriends() {
 		const token = sessionStorage.getItem("accessToken");
@@ -25,17 +24,9 @@
 		});
 		if (res.ok) {
 			friends = await res.json();
+			console.log(friends);
 		}
 	}
-
-	onMount(async () => {
-		const username = (sessionStorage.getItem("username") || "").toLowerCase();
-		if (username === "cp5721") {
-			friends = DEMO_FRIENDS.map((id) => [id]);
-		}
-
-		await loadFriends();
-	});
 
 	async function sendFriendRequest() {
 		const receiver = receiverNetid.trim().toLowerCase();
@@ -65,6 +56,8 @@
 			requestMessage = err.error || "Failed to send request.";
 		}
 	}
+
+	onMount(loadFriends);
 </script>
 
 {#if sidebarState.sidebarOpen}

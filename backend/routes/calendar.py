@@ -2,8 +2,8 @@ import os
 import requests
 from datetime import datetime, timedelta, timezone
 from flask import Blueprint, request, jsonify, redirect
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from models import db, CalendarAccount, CalendarEvent
+from .models import db, CalendarAccount, CalendarEvent
+from flask_jwt_extended import get_jwt_identity, jwt_required
 
 calendar_bp = Blueprint("calendar", __name__)
 

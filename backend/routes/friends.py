@@ -3,12 +3,9 @@ from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
-from models import Activity, FriendRequest, Friendship, User, db
+from .models import Activity, FriendRequest, Friendship, User, db
 
 friends_bp = Blueprint("friends", __name__)
-DEMO_FRIENDS_BY_USER = {
-    "cp5721": ["ab1234", "xy9876", "jk4321"],
-}
 
 
 @friends_bp.route("/request", methods=["POST"])
@@ -48,7 +45,8 @@ def send_request():
 def notifications():
     receiver = get_jwt_identity()
     all_sender_ids = db.session.query(FriendRequest.sender_id).filter_by(receiver_id=receiver).all()
-    return jsonify(all_sender_ids)
+    sender_ids = [row[0] for row in all_sender_ids]
+    return jsonify(sender_ids)
 
 
 @friends_bp.route("/get_all_friends", methods=["POST"])
@@ -56,9 +54,7 @@ def notifications():
 def get_all_friends():
     user_id = get_jwt_identity()
     all_friends_ids = db.session.query(Friendship.friend_id).filter_by(user_id=user_id).all()
-    if not all_friends_ids and user_id in DEMO_FRIENDS_BY_USER:
-        # Keep tuple shape consistent with SQLAlchemy query rows.
-        all_friends_ids = [(friend_id,) for friend_id in DEMO_FRIENDS_BY_USER[user_id]]
+    all_friends_ids = [row[0] for row in all_friends_ids]
     return jsonify(all_friends_ids)
 
 
@@ -76,8 +72,11 @@ def accept():
         return {"error": "request not found"}, 404
 
     db.session.delete(to_delete)
-    db.session.add(Friendship(user_id=sender, friend_id=receiver))
-    db.session.add(Friendship(user_id=receiver, friend_id=sender))
+    friendships = [
+        Friendship(user_id=sender, friend_id=receiver),
+        Friendship(user_id=receiver, friend_id=sender),
+    ]
+    db.session.add_all(friendships)
     db.session.commit()
     return {"message": "friendship request accepted"}
 
@@ -127,7 +126,7 @@ def get_active_friends():
     if not friend_ids:
         return jsonify([])
 
-    now = datetime.utcnow()
+    now = datetime.now()
     active_friend_ids = (
         db.session.query(Activity.user_id)
         .filter(Activity.user_id.in_(friend_ids))
