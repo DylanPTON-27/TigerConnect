@@ -92,7 +92,19 @@ def accept():
     try:
         db.session.commit()
     except IntegrityError:
+        # Handle duplicate/constraint races gracefully for demo and prod.
         db.session.rollback()
+
+        # If friendship rows now exist, treat this as success and just remove pending request.
+        now_forward = Friendship.query.filter_by(user_id=sender, friend_id=receiver).first()
+        now_reverse = Friendship.query.filter_by(user_id=receiver, friend_id=sender).first()
+        if now_forward and now_reverse:
+            pending = FriendRequest.query.filter_by(sender_id=sender, receiver_id=receiver).first()
+            if pending:
+                db.session.delete(pending)
+                db.session.commit()
+            return {"message": "friendship request accepted"}
+
         return {"error": "failed to accept request due to data integrity"}, 400
 
     return {"message": "friendship request accepted"}
