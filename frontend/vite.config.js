@@ -10,7 +10,9 @@ export default defineConfig({
 	],
 	server: {
 		proxy: {
-		'/friends': 'http://localhost:8000',
+			'/api': 'http://localhost:8000',
+			'/friends': 'http://localhost:8000',
+			'/calendar': 'http://localhost:8000',
 		},
 	},
 	build: {
