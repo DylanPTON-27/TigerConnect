@@ -28,6 +28,14 @@ app.config["SQLALCHEMY_DATABASE_URI"] = db_url or ("sqlite:///" + os.path.join(b
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False 
 db.init_app(app)
 
+
+def _pg_conninfo() -> str:
+    db_url = os.getenv("DATABASE_URL")
+    if db_url:
+        # psycopg accepts postgresql:// URLs directly.
+        return db_url
+    return "dbname=postgres user=postgres password=postgres"
+
 # Friends Route Import
 from routes.friends import friends_bp
 CORS(friends_bp, origins=[frontend_origin], supports_credentials=True)
@@ -51,24 +59,49 @@ app.register_blueprint(auth_bp)
 def get_current_time():
     return {'time': time.time()}
 
-@app.route('/api/calendar', methods=['POST'])
+@app.route('/api/calendar', methods=['GET', 'POST'])
 def get_cal():
-    with pg.connect("dbname=postgres user=postgres password=postgres") as conn:
+    with pg.connect(_pg_conninfo()) as conn:
         with conn.cursor() as cur:
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS calendars (
+                    id SERIAL PRIMARY KEY,
+                    filename TEXT,
+                    content TEXT NOT NULL
+                )
+                """
+            )
             cur.execute(
                 "SELECT filename, content FROM calendars WHERE id = (SELECT MAX(id) FROM calendars);"
             )
-            fname, content = cur.fetchone()
+            row = cur.fetchone()
+            if not row:
+                return {"error": "no uploaded calendar found"}, 404
+            _, content = row
     response = make_response(content)
     response.headers['Content-Type'] = 'text/calendar; charset=utf-8'
     return response
 
 @app.route('/api/upload', methods=['POST'])
 def receive_cal():
-    file = request.files['file']
-    if file.content_type == 'text/calendar':
-        with pg.connect("dbname=postgres user=postgres password=postgres") as conn:
+    file = request.files.get('file')
+    if not file:
+        return {'error': 'missing file'}, 400
+
+    is_ics = file.content_type == 'text/calendar' or file.filename.lower().endswith('.ics')
+    if is_ics:
+        with pg.connect(_pg_conninfo()) as conn:
             with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS calendars (
+                        id SERIAL PRIMARY KEY,
+                        filename TEXT,
+                        content TEXT NOT NULL
+                    )
+                    """
+                )
                 content = file.read().decode('utf-8')
                 cur.execute(
                     "INSERT INTO calendars (filename, content) values (%s, %s)",
