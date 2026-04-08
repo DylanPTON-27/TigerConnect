@@ -7,8 +7,10 @@
 
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 	let friends = [];
+	let receiverNetid = "";
+	let requestMessage = "";
 
-	onMount(async () => {
+	async function loadFriends() {
 		const token = sessionStorage.getItem("accessToken");
 		if (!token) return;
 
@@ -23,7 +25,40 @@
 		if (res.ok) {
 			friends = await res.json();
 		}
+	}
+
+	onMount(async () => {
+		await loadFriends();
 	});
+
+	async function sendFriendRequest() {
+		const receiver = receiverNetid.trim().toLowerCase();
+		if (!receiver) return;
+
+		const token = sessionStorage.getItem("accessToken");
+		if (!token) {
+			requestMessage = "Missing auth token.";
+			return;
+		}
+
+		const res = await fetch(`${API_BASE}/friends/request`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify({ receiver }),
+		});
+
+		if (res.ok) {
+			requestMessage = "Friend request sent.";
+			receiverNetid = "";
+			await loadFriends();
+		} else {
+			const err = await res.json().catch(() => ({}));
+			requestMessage = err.error || "Failed to send request.";
+		}
+	}
 </script>
 
 {#if sidebarState.sidebarOpen}
@@ -50,6 +85,19 @@
 			</div>
 		</Navigation.Header>
 		<Navigation.Content>
+			<div class="mb-3 flex gap-2">
+				<input
+					class="input border rounded px-2 py-1 w-full"
+					placeholder="NetID (e.g. ab1234)"
+					bind:value={receiverNetid}
+				/>
+				<button type="button" class="btn preset-filled" onclick={sendFriendRequest}>
+					Add
+				</button>
+			</div>
+			{#if requestMessage}
+				<p class="text-sm mb-2">{requestMessage}</p>
+			{/if}
 			{#each friends as friend}
 				<div class="flex items-center w-full min-w-0">
 					<span class="truncate">{Array.isArray(friend) ? friend[0] : friend}</span>

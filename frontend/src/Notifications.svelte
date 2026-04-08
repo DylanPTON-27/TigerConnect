@@ -3,21 +3,43 @@
 	import { Popover } from "@skeletonlabs/skeleton-svelte";
 	import { Bell, X, Check } from "@lucide/svelte";
 
+	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 	let requests = [];
 
-	const userId = "Bob";
-
 	onMount(async () => {
-		const res = await fetch("http://localhost:8000/friends/notifications", {
+		const token = sessionStorage.getItem("accessToken");
+		if (!token) return;
+
+		const res = await fetch(`${API_BASE}/friends/notifications`, {
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ user: userId }),
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify({}),
 		});
 		if (res.ok) {
-			const data = await res.json();
-			requests = data; // adjust if backend returns { requests: [...] }
+			requests = await res.json();
 		}
 	});
+
+	async function actOnRequest(sender, action) {
+		const token = sessionStorage.getItem("accessToken");
+		if (!token) return;
+
+		const endpoint = action === "accept" ? "accept" : "reject";
+		const res = await fetch(`${API_BASE}/friends/${endpoint}`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify({ sender: Array.isArray(sender) ? sender[0] : sender }),
+		});
+		if (res.ok) {
+			requests = requests.filter((r) => (Array.isArray(r) ? r[0] : r) !== (Array.isArray(sender) ? sender[0] : sender));
+		}
+	}
 </script>
 
 <Popover>
@@ -47,16 +69,16 @@
 						class="grid grid-cols-[1fr_auto_auto] gap-4 items-center"
 					>
 						<div>
-							<span class="underline">{senderId}</span> wants to be
+							<span class="underline">{Array.isArray(senderId) ? senderId[0] : senderId}</span> wants to be
 							your friend
 						</div>
 						<div>
-							<button class="btn-icon preset-filled"
+							<button class="btn-icon preset-filled" onclick={() => actOnRequest(senderId, "accept")}
 								><Check class="size-6" /></button
 							>
 						</div>
 						<div>
-							<button class="btn-icon preset-filled"
+							<button class="btn-icon preset-filled" onclick={() => actOnRequest(senderId, "reject")}
 								><X class="size-6" /></button
 							>
 						</div>

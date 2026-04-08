@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
-from models import Activity, FriendRequest, Friendship, db
+from models import Activity, FriendRequest, Friendship, User, db
 
 friends_bp = Blueprint("friends", __name__)
 DEMO_FRIENDS_BY_USER = {
@@ -19,6 +19,20 @@ def send_request():
     receiver = data.get("receiver")
     if not receiver:
         return {"error": "missing receiver"}, 400
+    receiver = receiver.strip().lower()
+    if not receiver:
+        return {"error": "missing receiver"}, 400
+
+    if receiver == sender:
+        return {"error": "cannot friend yourself"}, 400
+
+    # Demo-friendly: ensure receiver exists to satisfy FK constraints.
+    sender_user = User.query.filter_by(netid=sender).first()
+    if not sender_user:
+        db.session.add(User(netid=sender, name=sender, email=f"{sender}@princeton.edu"))
+    receiver_user = User.query.filter_by(netid=receiver).first()
+    if not receiver_user:
+        db.session.add(User(netid=receiver, name=receiver, email=f"{receiver}@princeton.edu"))
 
     existing = FriendRequest.query.filter_by(sender_id=sender, receiver_id=receiver).first()
     if existing:
