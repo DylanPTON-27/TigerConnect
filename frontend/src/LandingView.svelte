@@ -6,6 +6,13 @@
 
   onMount(() => {
     const params = new URLSearchParams(window.location.search);
+
+    // Robust fallback: if CAS nonce lands on "/", forward to app route.
+    if (params.get("nonce")) {
+      window.location.href = `/app.html?${params.toString()}`;
+      return;
+    }
+
     if (params.get("logout") === "1") {
       sessionStorage.removeItem("username");
       sessionStorage.removeItem("accessToken");
