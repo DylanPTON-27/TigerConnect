@@ -166,6 +166,30 @@ def get_active_friends():
     return jsonify(active_friend_ids)
 
 
+@friends_bp.route("/remove", methods=["POST"])
+@jwt_required()
+def remove():
+    data = request.get_json(silent=True) or {}
+    user_id = get_jwt_identity() 
+    receiver = (data.get("receiver"))
+
+    if not receiver:
+        return {"error": "missing receiver"}, 400
+
+    forward = Friendship.query.filter_by(user_id=user_id, friend_id=receiver).first()
+    reverse = Friendship.query.filter_by(user_id=receiver, friend_id=user_id).first()
+
+    if not forward and not reverse:
+        return {"error": "friendship not found"}, 404
+    db.session.delete(forward)
+    db.session.delete(reverse)
+
+    db.session.commit()
+    return {"message": "friendship removed"}
+
+    
+
+
 @friends_bp.route("/get_status", methods=["POST"])
 @jwt_required()
 def get_status():
