@@ -54,7 +54,7 @@ def auth_callback():
     access_token = token_resp["access_token"]
     refresh_token = token_resp.get("refresh_token")
     expires_in = token_resp.get("expires_in", 3600)
-    expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+    expires_at = datetime.now() + timedelta(seconds=expires_in)
 
     acct = CalendarAccount.query.filter_by(user_id=user).first()
     if not acct:
@@ -81,7 +81,7 @@ def refresh_access_token(acct: CalendarAccount):
     }).json()
     acct.access_token = token_resp["access_token"]
     expires_in = token_resp.get("expires_in", 3600)
-    acct.expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+    acct.expires_at = datetime.now() + timedelta(seconds=expires_in)
     db.session.commit()
     return True
 
@@ -93,11 +93,11 @@ def sync_calendar():
     if not acct:
         return {"error": "calendar not connected"}, 400
 
-    if acct.expires_at and acct.expires_at < datetime.utcnow():
+    if acct.expires_at and acct.expires_at < datetime.now():
         if not refresh_access_token(acct):
             return {"error": "token expired"}, 401
 
-    now = datetime.utcnow().replace(tzinfo=timezone.utc)
+    now = datetime.now().replace(tzinfo=timezone.utc)
     time_min = now.isoformat()
     time_max = (now + timedelta(days=30)).isoformat()
 
@@ -128,13 +128,13 @@ def sync_calendar():
                 start_utc=start_utc.replace(tzinfo=None),
                 end_utc=end_utc.replace(tzinfo=None),
                 timezone="UTC",
-                updated_at=datetime.utcnow()
+                updated_at=datetime.now()
             ))
         else:
             existing.title = title
             existing.start_utc = start_utc.replace(tzinfo=None)
             existing.end_utc = end_utc.replace(tzinfo=None)
-            existing.updated_at = datetime.utcnow()
+            existing.updated_at = datetime.now()
 
     db.session.commit()
     return {"message": "synced", "count": len(items)}

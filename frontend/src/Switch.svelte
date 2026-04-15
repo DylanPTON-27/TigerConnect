@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Switch } from '@skeletonlabs/skeleton-svelte';
 	import { themeState } from './sharedVars.svelte.js';
+	import { Sun, Moon } from "@lucide/svelte";
 
 	let checked = $state(false);
 
@@ -26,8 +27,14 @@
 </svelte:head>
 
 <Switch {checked} {onCheckedChange}>
-	<Switch.Control class='bg-zinc-900 data-[state=checked]:bg-zinc-100'>
-		<Switch.Thumb class='bg-zinc-100 data-[state=checked]:bg-zinc-900' />
+	<Switch.Control class='h-auto w-11 bg-zinc-900 data-[state=checked]:bg-zinc-100'>
+		<Switch.Thumb class='bg-zinc-100 data-[state=checked]:bg-zinc-900'>
+			{#if checked}
+				<Moon color="white" class="text-xs"/>
+			{:else}
+				<Sun />
+			{/if}
+		</Switch.Thumb>
 	</Switch.Control>
 	<Switch.HiddenInput />
 </Switch>

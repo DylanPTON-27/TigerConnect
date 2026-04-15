@@ -14,7 +14,7 @@ class FriendRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False)
     receiver_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now())
 
 # Friendship Status
 class Friendship(db.Model):
@@ -46,7 +46,7 @@ class CalendarEvent(db.Model):
     start_utc = db.Column(db.DateTime, nullable=False, index=True)
     end_utc = db.Column(db.DateTime, nullable=False, index=True)
     timezone = db.Column(db.String(64))
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.now())
 
     __table_args__ = (
         db.UniqueConstraint("user_id", "provider_event_id", name="uq_user_event"),
@@ -56,4 +56,4 @@ class CalendarEvent(db.Model):
 class AuthNonce(db.Model):
     nonce = db.Column(db.String(64), primary_key=True)
     username = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False, index=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now(), nullable=False)

@@ -2,6 +2,7 @@
 	import "temporal-polyfill/global";
 	import { onMount } from "svelte";
 	import { ScheduleXCalendar } from "@schedule-x/svelte";
+	import '@schedule-x/theme-shadcn/dist/index.css'
 	import {
 		createCalendar,
 		createViewDay,
@@ -9,18 +10,27 @@
 	} from "@schedule-x/calendar";
 	import { themeState } from "./sharedVars.svelte.js";
 	import { createCurrentTimePlugin } from "@schedule-x/current-time";
-	import "@schedule-x/theme-default/dist/index.css";
+	import { createScrollControllerPlugin } from '@schedule-x/scroll-controller'
 
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
-	let statusMessage = "";
-	let calendarRenderKey = 0;
-	let calendarApp = createCalendar({
+	let statusMessage = $state("");
+	let calendarRenderKey = $state(0);
+	const date = new Date();
+	date.setHours(date.getHours() - 4);
+	const hh = String(date.getHours()).padStart(2, '0');
+	const mm = String(date.getMinutes()).padStart(2, '0');
+
+	const scrollController = createScrollControllerPlugin({
+	initialScroll: `${hh}:${mm}`
+	})
+	let calendarApp = $state(createCalendar({
 		views: [createViewDay(), createViewWeek()],
 		events: [],
 		timezone: "US/Eastern",
-		isDark: themeState.themeIsDark,
-		plugins: [createCurrentTimePlugin()],
-	});
+		theme: 'shadcn',
+		// isDark: themeState.themeIsDark,
+		plugins: [createCurrentTimePlugin(), scrollController],
+	}));
 
 	function toPlainDate(dateLike) {
 		if (!dateLike) return Temporal.Now.plainDateISO("US/Eastern");
@@ -132,8 +142,9 @@
 				events: parsedEvents,
 				selectedDate,
 				timezone: "US/Eastern",
-				isDark: themeState.themeIsDark,
-				plugins: [createCurrentTimePlugin()],
+				theme: 'shadcn',
+				// isDark: themeState.themeIsDark,
+				plugins: [createCurrentTimePlugin(), scrollController],
 			});
 			calendarRenderKey += 1;
 			statusMessage = `Loaded ${parsedEvents.length} events from latest upload.`;
@@ -165,15 +176,21 @@
 		event.target.value = "";
 	}
 
-	onMount(() => {
-		void loadLatestCalendar();
+	function toggleDark(dark) {
+		calendarApp.setTheme(dark ? "dark" : "light");
+	}
+
+	$effect(() => toggleDark(themeState.themeIsDark));
+
+	onMount(async () => {
+		await loadLatestCalendar();
 	});
 </script>
 
 <div class="mx-auto mb-3 w-[90%] flex items-center gap-3">
 	<label class="btn preset-filled cursor-pointer">
 		Upload .ics
-		<input type="file" accept=".ics,text/calendar" class="hidden" on:change={onFileChange} />
+		<input type="file" accept=".ics,text/calendar" class="hidden" onchange={onFileChange} />
 	</label>
 	{#if statusMessage}
 		<span class="text-sm">{statusMessage}</span>
@@ -188,7 +205,7 @@
 	:global(.sx-svelte-calendar-wrapper) {
 		width: 90%;
 		max-width: 100vw;
-		height: 80vh;
+		height: 75vh;
 		max-height: 90vh;
 		margin: auto;
 	}
