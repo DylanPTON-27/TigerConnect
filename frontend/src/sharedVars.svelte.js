@@ -1,7 +1,18 @@
 export const sidebarState = $state({
-  sidebarOpen: false,
+  sidebarState: 'closed', // closed, open, add
   toggleSidebar() {
-    this.sidebarOpen = !this.sidebarOpen;
+    if (this.sidebarState === 'closed') {
+      this.sidebarState = 'open';
+    } else {
+      this.sidebarState = 'closed';
+    }
+  },
+  toggleList() {
+    if (this.sidebarState === 'open') {
+      this.sidebarState = 'add';
+    } else if (this.sidebarState === 'add') {
+      this.sidebarState = 'open'
+    }
   }
 });
 

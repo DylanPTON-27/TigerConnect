@@ -44,7 +44,7 @@
 </script>
 
 <Popover>
-	<Popover.Trigger><Bell class="size-6" /></Popover.Trigger>
+	<Popover.Trigger><Bell class="size-9.5 rounded-xl p-1 border-2" /></Popover.Trigger>
 	<Popover.Positioner class="z-1!">
 		<Popover.Content class="card w-96 p-4 bg-surface-100-900 shadow-xl">
 			<div class="space-y-4">
@@ -100,7 +100,7 @@
 	@custom-variant dark (&:where([data-mode=dark], [data-mode=dark] *));
 
 	button {
-		border-radius: 8px;
+		border-radius: 20px;
 		margin-right: 5px;
 		margin-left: 5px;
 		padding: 0.8em 1em;

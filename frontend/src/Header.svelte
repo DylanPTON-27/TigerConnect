@@ -9,7 +9,7 @@
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 </script>
 
-<AppBar class="bg-zinc-400 dark:bg-zinc-900 flex justify-center">
+<AppBar class="bg-zinc-400 dark:bg-zinc-900 justify-center">
 	<AppBar.Toolbar class="grid grid-cols-3 items-center">
 		<AppBar.Lead class="flex items-center">
 			<button

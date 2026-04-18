@@ -2,6 +2,8 @@
 	import { Carousel } from "@skeletonlabs/skeleton-svelte";
 	import Calendar from "./Calendar.svelte";
 	import StatusView from "./StatusView.svelte";
+
+	const tabs = ["Status", "Calendar"];
 </script>
 
 <Carousel slideCount={2} slidesPerPage={1} spacing="16px">
@@ -20,7 +22,9 @@
 		<Carousel.Context>
 			{#snippet children(carousel)}
 				{#each carousel().pageSnapPoints as _, index}
-					<Carousel.Indicator {index} class="indicators" />
+					<Carousel.Indicator {index} class="indicators">
+						{tabs[index]}
+					</Carousel.Indicator>
 				{/each}
 			{/snippet}
 		</Carousel.Context>
@@ -29,15 +33,23 @@
 
 <style>
 	@import "tailwindcss";
-	@custom-variant dark (&:where([data-mode=dark], [data-mode=dark] *));
+	/* @custom-variant dark (&:where([data-mode=dark], [data-mode=dark] *)); */
 
 	:global(.carousel) {
 		@apply h-auto w-full;
 	}
 
 	:global(.indicators) {
-		@apply h-6 w-6;
+		@apply text-[2vh];
+		@apply h-[5vh] w-auto;
 		@apply border-2;
 		@apply ml-0.75 mr-0.75;
+		@apply rounded-xl;
+		@apply p-2;
+		@apply flex items-center justify-center;
+	}
+
+	:global(.indicators[data-current]) {
+		@apply bg-gray-500;
 	}
 </style>

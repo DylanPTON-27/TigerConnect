@@ -6,3 +6,4 @@ psycopg[binary]
 requests
 flask-cors
 psycopg2-binary
+python-dotenv
