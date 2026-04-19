@@ -8,6 +8,9 @@ from .models import Activity, FriendRequest, Friendship, User, db, Blocked
 import os 
 import sendgrid
 from sendgrid.helpers.mail import Mail
+import re
+
+
 
 friends_bp = Blueprint("friends", __name__)
 
@@ -33,6 +36,13 @@ def send_request():
     receiver = receiver.strip().lower()
     if not receiver:
         return {"error": "missing receiver"}, 400
+
+    pattern = r'[A-Za-z]{2}[0-9]{4}'
+    valid_netid = bool(re.fullmatch(pattern, sender))
+    if not valid_netid:
+         return {"error": "not valid netid"}, 400
+
+
 
     if receiver == sender:
         return {"error": "cannot friend yourself"}, 400
