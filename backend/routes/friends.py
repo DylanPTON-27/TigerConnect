@@ -5,9 +5,22 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 from sqlalchemy.exc import IntegrityError
 
 from .models import Activity, FriendRequest, Friendship, User, db, Blocked
+import os 
+import sendgrid
+from sendgrid.helpers.mail import Mail
 
 friends_bp = Blueprint("friends", __name__)
 
+
+def send_email(recipient, body):
+    client = sendgrid.SendGridAPIClient(api_key=os.environ.get("SENDGRID_API_KEY"))
+    message = Mail(
+        from_email="jasincekinmez@gmail.com",
+        to_emails=recipient,
+        subject="Friend Request",
+        html_content=body
+    )
+    client.send(message)
 
 @friends_bp.route("/request", methods=["POST"])
 @jwt_required()
@@ -46,6 +59,7 @@ def send_request():
 
     db.session.add(FriendRequest(sender_id=sender, receiver_id=receiver))
     db.session.commit()
+    send_email(f"{receiver}@princeton.edu",f"{sender} sent you a friend request")
     return {"message": "request sent"}
 
 
