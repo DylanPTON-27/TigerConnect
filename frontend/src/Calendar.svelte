@@ -13,6 +13,8 @@
 	import { createCurrentTimePlugin } from "@schedule-x/current-time";
 	import { createScrollControllerPlugin } from '@schedule-x/scroll-controller'
 	import { createEventsServicePlugin } from '@schedule-x/events-service';
+    import { onMount } from "svelte";
+	import { waitForToken } from './helpers.svelte';
 
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 	let statusMessage = $state("");
@@ -360,10 +362,13 @@
 		}
 	}
 
-	$effect(() => {
-		setTimeout(async () => {
+	onMount(() => {
+		const f = async () => {
+			await waitForToken("accessToken"); 
 			await loadLatestCalendar();
-		}, 200);
+		};
+
+		f();
 	});
 
 	$effect(() => toggleDark(themeState.themeIsDark));

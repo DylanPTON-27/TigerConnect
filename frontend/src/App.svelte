@@ -2,6 +2,7 @@
 	import Main from "./Main.svelte";
 	import Header from "./Header.svelte";
     import { onMount } from "svelte";
+	import { waitForToken } from './helpers.svelte';
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 	
 	onMount(async () => {
@@ -45,12 +46,9 @@
 	}
 
 	onMount(async () => {
-		setTimeout(() => {
-			refreshToken();
-			setInterval(async () => {
-				refreshToken();
-			}, 1_800_000); // 30 minutes
-		}, 500);
+		await waitForToken("accessToken");
+		refreshToken();
+		setInterval(refreshToken, 1_800_000); // 30 minutes
 	});
 </script>
 

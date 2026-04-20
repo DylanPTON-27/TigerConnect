@@ -1,8 +1,7 @@
 <script>
 	import { onMount } from "svelte";
-	import { sidebarState } from "./sharedVars.svelte.js";
-	import { Navigation } from "@skeletonlabs/skeleton-svelte";
-	import { SquarePlus, SquareMinus, X } from "@lucide/svelte";
+	import { waitForToken } from './helpers.svelte';
+	import { Handshake } from "@lucide/svelte";
 	import "./app.css";
 
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
@@ -24,7 +23,6 @@
 		});
 		if (res.ok) {
 			friends = await res.json();
-			console.log(friends);
 		}
 	}
 
@@ -62,23 +60,24 @@
 	}
 
 	onMount(() => {
-		void loadFriends();
-		window.addEventListener("friends:changed", handleFriendsChanged);
-		return () => window.removeEventListener("friends:changed", handleFriendsChanged);
-	});
+		const f = async () => {
+			await waitForToken("accessToken");
+			void loadFriends();
+			window.addEventListener("friends:changed", handleFriendsChanged);
+			return () => window.removeEventListener("friends:changed", handleFriendsChanged);
+		};
 
-	const links = [
-		{ label: 'Alice Fu', href: '/#', status: 'online'},
-		{ label: 'Bob', href: '/#', status: 'offline'},
-		{ label: 'Charlie', href: '/#', status: 'offline'},
-		{ label: 'Dwight', href: '/#', status: 'online'},
-	];
+		f();
+	});
 </script>
 
-<div
-	class="grid grid-cols-[auto_1fr_auto] gap-4 items-center"
->
-	<div class="mb-3 flex gap-2">
+<div class="container">
+<header class="text-xl font-bold flex items-center">
+	<Handshake class="size-6 inline-block mr-1" />
+	Friends List
+</header>
+<article class="flex items-center h-[15%]">
+	<div class="flex">
 		<input
 			class="input border rounded px-2 py-1 w-full"
 			placeholder="NetID (e.g. ab1234)"
@@ -91,10 +90,10 @@
 	{#if requestMessage}
 		<p class="text-sm mb-2">{requestMessage}</p>
 	{/if}
-</div>
-<div>
+</article>
+<footer>
 	{#each friends as friend}
-		<button type="button" class="grid grid-cols-[1fr_auto] justify-items-start w-full min-w-0 names">
+		<button type="button" class="names">
 			<div>
 				<span class="truncate">{Array.isArray(friend) ? friend[0] : friend}</span>
 			</div>
@@ -103,11 +102,18 @@
 			</div>
 		</button>
 	{/each}
-	</div>
+</footer>
+</div>
 
 <style>
 	@import "tailwindcss";
+	@import '@skeletonlabs/skeleton';
 	@custom-variant dark (&:where([data-mode=dark], [data-mode=dark] *));
+
+	.container {
+		@apply card card-hover divide-y;
+		@apply h-[95%] w-[90%];
+	}
 
 	button {
 		border-radius: 8px;
@@ -137,6 +143,8 @@
 	.names {
 		font-size: 1em;
 		padding: 0em 1em;
+		@apply mt-1;
+		@apply grid grid-cols-[1fr_auto] justify-items-start w-full;
 		@apply truncate;
 		@apply bg-transparent;
 		@apply text-black dark:text-white;

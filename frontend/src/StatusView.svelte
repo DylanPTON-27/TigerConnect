@@ -1,12 +1,14 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Switch } from "@skeletonlabs/skeleton-svelte";
+  import { waitForToken } from './helpers.svelte';
   import FriendList from "./FriendList.svelte";
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
   let checked = false;
 
   onMount(async () => {
+    await waitForToken("accessToken");
     const token = sessionStorage.getItem("accessToken");
     if (!token) return;
 
@@ -44,9 +46,7 @@
 <div class="h-full w-[95%]">
   <div class="grid grid-flow-col grid-rows-3 gap-4 h-[95%] m-auto">
     <div class="row-span-3 card">
-      <div>
-        <FriendList />
-      </div>
+      <FriendList />
     </div>
     <div class="col-span-2 card">
       <Switch

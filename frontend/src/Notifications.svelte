@@ -2,11 +2,14 @@
 	import { onMount } from "svelte";
 	import { Popover } from "@skeletonlabs/skeleton-svelte";
 	import { Bell, X, Check } from "@lucide/svelte";
+	import { waitForToken } from './helpers.svelte';
 
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
-	let requests = [];
+	let requests = $state([]);
 
-	onMount(async () => {
+	async function fetchNotifications () {
+		await waitForToken("accessToken");
+
 		const token = sessionStorage.getItem("accessToken");
 		if (!token) return;
 
@@ -20,7 +23,9 @@
 		if (res.ok) {
 			requests = await res.json();
 		}
-	});
+	}
+
+	onMount(fetchNotifications);
 
 	async function actOnRequest(sender, action) {
 		const token = sessionStorage.getItem("accessToken");

@@ -99,9 +99,9 @@ def get_all_friends(user_id):
 @friends_bp.route("/accept", methods=["POST"])
 @jwt_required()
 def accept():
-    data = request.get_json(silent=True) or {}
-    sender = (data.get("sender") or "").strip().lower()
-    receiver = (get_jwt_identity() or "").strip().lower()
+    sender = (request.form.get("sender")).strip().lower()
+    print(sender)
+    receiver = get_jwt_identity()
     if not sender:
         return {"error": "missing sender"}, 400
     if Blocked.query.filter_by(user_id=receiver, friend_id=sender).first():
