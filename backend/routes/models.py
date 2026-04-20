@@ -14,7 +14,7 @@ class FriendRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False)
     receiver_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 # Friendship Status
 class Friendship(db.Model):
@@ -27,6 +27,15 @@ class Activity(db.Model):
     user_id = db.Column(db.String, db.ForeignKey("user.netid"), primary_key=True)
     is_active = db.Column(db.Boolean, default=False)
     expires_at = db.Column(db.DateTime)
+
+# Blocked People 
+class Blocked(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False)
+    friend_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False)
+
+
+
 
 # Calendar OAuth account (Google)
 class CalendarAccount(db.Model):
