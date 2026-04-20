@@ -18,7 +18,7 @@
 			<Calendar />
 		</Carousel.Item>
 	</Carousel.ItemGroup>
-	<Carousel.IndicatorGroup>
+	<Carousel.IndicatorGroup class="mt-2">
 		<Carousel.Context>
 			{#snippet children(carousel)}
 				{#each carousel().pageSnapPoints as _, index}
@@ -33,7 +33,6 @@
 
 <style>
 	@import "tailwindcss";
-	/* @custom-variant dark (&:where([data-mode=dark], [data-mode=dark] *)); */
 
 	:global(.carousel) {
 		@apply h-auto w-full;

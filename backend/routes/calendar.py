@@ -1,9 +1,12 @@
 import os
 import requests
 from datetime import datetime, timedelta, timezone
-from flask import Blueprint, request, jsonify, redirect
+from flask import Blueprint, request, jsonify, redirect, make_response
 from .models import db, CalendarAccount, CalendarEvent
-from flask_jwt_extended import get_jwt_identity, jwt_required
+from flask_jwt_extended import get_jwt_identity, jwt_required, get_jwt
+from .friends import get_all_friends
+import psycopg as pg
+import random
 
 calendar_bp = Blueprint("calendar", __name__)
 
@@ -19,6 +22,13 @@ SCOPES = "https://www.googleapis.com/auth/calendar.readonly"
 
 def utc_dt(iso_str):
     return datetime.fromisoformat(iso_str.replace("Z", "+00:00")).astimezone(timezone.utc)
+
+def _pg_conninfo() -> str:
+    db_url = os.getenv("DATABASE_URL")
+    if db_url:
+        # psycopg accepts postgresql:// URLs directly.
+        return db_url
+    return "dbname=postgres user=postgres password=postgres"
 
 @calendar_bp.route("/auth/start", methods=["GET"])
 @jwt_required()
@@ -212,3 +222,86 @@ def suggest():
             })
 
     return jsonify({"suggestions": suggestions})
+
+# ------------------------------------------------------------------------------
+# POSTGRES .ICS CALENDAR
+# ------------------------------------------------------------------------------
+
+@calendar_bp.route('/get_cal', methods=['POST'])
+@jwt_required()
+def get_cal():
+    user = get_jwt_identity()
+    users = get_all_friends(user)
+    users.append(user)
+    
+    with pg.connect(_pg_conninfo()) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS calendars (
+                    id SERIAL PRIMARY KEY,
+                    uid TEXT NOT NULL UNIQUE,
+                    filename TEXT NOT NULL,
+                    content TEXT NOT NULL
+                )
+                """
+            )
+            cur.execute(
+                "SELECT content FROM calendars WHERE uid = ANY(%s);",
+                ((users, ))
+            )
+            rows = cur.fetchall()
+            content = ""
+            for row in rows:
+                content += row[0]
+            if not row:
+                return {"error": "no uploaded calendar found"}
+    response = make_response(content)
+    response.headers['Content-Type'] = 'text/calendar; charset=utf-8'
+    return response
+
+def clean_ics(content: str, user: str) -> str:
+    new_content = ""
+    for line in content.splitlines():
+        start = line.split(':')[0]
+        if 'BEGIN' in start or 'DT' in start or 'LAST' in start or 'END' in start:
+            new_content += line + '\n'
+        elif 'SUMMARY' in start:
+            new_content += f"SUMMARY:{user}\n"
+    return new_content
+        
+
+@calendar_bp.route('/upload', methods=['POST'])
+@jwt_required()
+def receive_cal():
+    user = get_jwt_identity()
+    file = request.files.get('file')
+    if not file:
+        return {'error': 'missing file'}, 400
+
+    is_ics = file.content_type == 'text/calendar' or file.filename.lower().endswith('.ics')
+    if is_ics:
+        with pg.connect(_pg_conninfo()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS calendars (
+                        id SERIAL PRIMARY KEY,
+                        uid TEXT NOT NULL UNIQUE,
+                        filename TEXT NOT NULL,
+                        content TEXT NOT NULL
+                    )
+                    """
+                )
+                content = file.read().decode('utf-8')
+                content = clean_ics(content, user)
+                cur.execute(
+                    """
+                    INSERT INTO calendars (uid, filename, content) values (%s, %s, %s)
+                    ON CONFLICT (uid) DO UPDATE SET filename = %s, content = %s;
+                    """,
+                    (user, file.filename, content, file.filename, content)
+                )
+        return 'Received!'
+    else:
+        return 'Wrong File Type!'

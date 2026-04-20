@@ -13,7 +13,6 @@
 		const res = await fetch(`${API_BASE}/friends/notifications`, {
 			method: "POST",
 			headers: {
-				"Content-Type": "application/json",
 				Authorization: `Bearer ${token}`,
 			},
 			body: JSON.stringify({}),
@@ -31,7 +30,6 @@
 		const res = await fetch(`${API_BASE}/friends/${endpoint}`, {
 			method: "POST",
 			headers: {
-				"Content-Type": "application/json",
 				Authorization: `Bearer ${token}`,
 			},
 			body: JSON.stringify({ sender: Array.isArray(sender) ? sender[0] : sender }),

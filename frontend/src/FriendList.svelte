@@ -75,94 +75,35 @@
 	];
 </script>
 
-{#if sidebarState.sidebarState === 'open'}
-	<Navigation
-		layout="sidebar"
-		class="bg-zinc-300 dark:bg-zinc-800 grid grid-rows-[auto_1fr_auto] gap-4 w-[20vw]"
-	>
-		<Navigation.Header
-			class="grid grid-cols-[auto_1fr_auto] gap-4 items-center"
-		>
+<div
+	class="grid grid-cols-[auto_1fr_auto] gap-4 items-center"
+>
+	<div class="mb-3 flex gap-2">
+		<input
+			class="input border rounded px-2 py-1 w-full"
+			placeholder="NetID (e.g. ab1234)"
+			bind:value={receiverNetid}
+		/>
+		<button type="button" class="btn preset-filled" onclick={sendFriendRequest}>
+			Add
+		</button>
+	</div>
+	{#if requestMessage}
+		<p class="text-sm mb-2">{requestMessage}</p>
+	{/if}
+</div>
+<div>
+	{#each friends as friend}
+		<button type="button" class="grid grid-cols-[1fr_auto] justify-items-start w-full min-w-0 names">
 			<div>
-				<button
-					type="button"
-					class="friends-icon hover:preset-tonal"
-					onclick={() => sidebarState.toggleList()}
-					><SquarePlus class="size-8" />
-				</button>
-			</div>
-			<div>
-				<p class="text-lg font-bold">Friends List</p>
-			</div>
-			<div>
-				<button
-					type="button"
-					class="friends-icon hover:preset-tonal"
-					onclick={() => sidebarState.toggleSidebar()}
-					><X class="size-6" />
-				</button>
-			</div>
-		</Navigation.Header>
-		<Navigation.Content>
-			{#each friends as friend}
-				<button type="button" class="grid grid-cols-[1fr_auto] justify-items-start w-full min-w-0 names">
-					<div>
-						<span class="truncate">{Array.isArray(friend) ? friend[0] : friend}</span>
-					</div>
-					<div>
-						<span class="ml-auto shrink-0">(STATUS)</span>
-					</div>
-				</button>
-			{/each}
-		</Navigation.Content>
-	</Navigation>
-{/if}
-
-{#if sidebarState.sidebarState === 'add'}
-	<Navigation
-		layout="sidebar"
-		class="bg-zinc-300 dark:bg-zinc-800 grid grid-rows-[auto_1fr_auto] gap-4 w-[20vw]"
-	>
-		<Navigation.Header
-			class="grid grid-cols-[auto_1fr_auto] gap-4 items-center"
-		>
-			<div>
-				<button
-					type="button"
-					class="friends-icon hover:preset-tonal"
-					onclick={() => sidebarState.toggleList()}
-					><SquareMinus class="size-8" />
-				</button>
+				<span class="truncate">{Array.isArray(friend) ? friend[0] : friend}</span>
 			</div>
 			<div>
-				<p class="text-lg font-bold">Add Friends</p>
+				<span class="ml-auto shrink-0">(STATUS)</span>
 			</div>
-			<div>
-				<button
-					type="button"
-					class="friends-icon hover:preset-tonal"
-					onclick={() => sidebarState.toggleSidebar()}
-					><X class="size-6" />
-				</button>
-			</div>
-		</Navigation.Header>
-		<Navigation.Content>
-			<div class="mb-3 flex gap-2">
-				<input
-					class="input border rounded px-2 py-1 w-full"
-					placeholder="NetID (e.g. ab1234)"
-					bind:value={receiverNetid}
-				/>
-				<button type="button" class="btn preset-filled" onclick={sendFriendRequest}>
-					Add
-				</button>
-			</div>
-			{#if requestMessage}
-				<p class="text-sm mb-2">{requestMessage}</p>
-			{/if}
-		</Navigation.Content>
-	</Navigation>
-{/if}
+		</button>
+	{/each}
+	</div>
 
 <style>
 	@import "tailwindcss";

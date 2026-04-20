@@ -3,7 +3,7 @@ import os
 from urllib.parse import urlsplit
 sys.path.append(os.path.join(os.curdir, "backend"))
 import time
-from flask import Flask, make_response, request
+from flask import Flask
 from flask_cors import CORS
 import psycopg as pg
 import io
@@ -56,59 +56,3 @@ jwt = flask_jwt_extended.JWTManager(app)
 # Auth imports
 from routes.auth import auth_bp
 app.register_blueprint(auth_bp)
-
-@app.route('/api/time')
-def get_current_time():
-    return {'time': time.time()}
-
-@app.route('/api/calendar', methods=['GET', 'POST'])
-def get_cal():
-    with pg.connect(_pg_conninfo()) as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                CREATE TABLE IF NOT EXISTS calendars (
-                    id SERIAL PRIMARY KEY,
-                    filename TEXT,
-                    content TEXT NOT NULL
-                )
-                """
-            )
-            cur.execute(
-                "SELECT filename, content FROM calendars WHERE id = (SELECT MAX(id) FROM calendars);"
-            )
-            row = cur.fetchone()
-            if not row:
-                return {"error": "no uploaded calendar found"}, 404
-            _, content = row
-    response = make_response(content)
-    response.headers['Content-Type'] = 'text/calendar; charset=utf-8'
-    return response
-
-@app.route('/api/upload', methods=['POST'])
-def receive_cal():
-    file = request.files.get('file')
-    if not file:
-        return {'error': 'missing file'}, 400
-
-    is_ics = file.content_type == 'text/calendar' or file.filename.lower().endswith('.ics')
-    if is_ics:
-        with pg.connect(_pg_conninfo()) as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    CREATE TABLE IF NOT EXISTS calendars (
-                        id SERIAL PRIMARY KEY,
-                        filename TEXT,
-                        content TEXT NOT NULL
-                    )
-                    """
-                )
-                content = file.read().decode('utf-8')
-                cur.execute(
-                    "INSERT INTO calendars (filename, content) values (%s, %s)",
-                    (file.filename, content)
-                )
-        return 'Received!'
-    else:
-        return 'Wrong File Type!'

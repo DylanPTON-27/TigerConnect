@@ -52,11 +52,16 @@ def notifications():
 
 @friends_bp.route("/get_all_friends", methods=["POST"])
 @jwt_required()
-def get_all_friends():
-    user_id = get_jwt_identity()
+def get_all_friends_route():
+    return jsonify(
+        get_all_friends(get_jwt_identity())
+    )
+
+
+def get_all_friends(user_id):
     all_friends_ids = db.session.query(Friendship.friend_id).filter_by(user_id=user_id).all()
     all_friends_ids = [row[0] for row in all_friends_ids]
-    return jsonify(all_friends_ids)
+    return all_friends_ids
 
 
 @friends_bp.route("/accept", methods=["POST"])
@@ -141,7 +146,7 @@ def status_update():
         db.session.add(status_object)
 
     status_object.is_active = active
-    status_object.expires_at = datetime.utcnow() + timedelta(hours=1) if active else datetime.utcnow()
+    status_object.expires_at = datetime.now() + timedelta(hours=1) if active else datetime.now()
     db.session.commit()
     return {"message": "Activity Status Updated"}
 
@@ -198,7 +203,7 @@ def get_status():
     if not status_object:
         return jsonify(False)
 
-    if status_object.expires_at and status_object.expires_at < datetime.utcnow():
+    if status_object.expires_at and status_object.expires_at < datetime.now():
         status_object.is_active = False
         db.session.commit()
 
