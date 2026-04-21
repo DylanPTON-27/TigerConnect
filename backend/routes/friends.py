@@ -57,11 +57,11 @@ def send_request():
 
     existing = FriendRequest.query.filter_by(sender_id=sender, receiver_id=receiver).first()
     if existing:
-        return {"error": "request already exists"}, 400
+        return {"message": "request already exists"}, 200
     blocked = Blocked.query.filter_by(user_id=sender, friend_id=receiver).first()
     blocked2 = Blocked.query.filter_by(user_id=receiver, friend_id=sender).first()
     if blocked:
-        return {"error": "Unblock the person you want to friend first"}, 400
+        return {"message": "Unblock the person you want to friend first"}, 200
     if blocked2:
         return {"error": "Try again later!"}, 400
 
@@ -69,7 +69,7 @@ def send_request():
 
     db.session.add(FriendRequest(sender_id=sender, receiver_id=receiver))
     db.session.commit()
-    send_email(f"{receiver}@princeton.edu",f"{sender} sent you a friend request")
+    # send_email(f"{receiver}@princeton.edu",f"{sender} sent you a friend request")
     return {"message": "request sent"}
 
 
