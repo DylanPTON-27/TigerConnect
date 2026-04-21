@@ -5,8 +5,6 @@ from flask import Blueprint, request, jsonify, redirect, make_response
 from .models import db, CalendarAccount, CalendarEvent, Calendar
 from flask_jwt_extended import get_jwt_identity, jwt_required, get_jwt
 from .friends import get_all_friends
-import psycopg as pg
-import random
 
 calendar_bp = Blueprint("calendar", __name__)
 

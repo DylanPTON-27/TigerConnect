@@ -2,11 +2,8 @@ import sys
 import os
 from urllib.parse import urlsplit
 sys.path.append(os.path.join(os.curdir, "backend"))
-import time
 from flask import Flask
 from flask_cors import CORS
-import psycopg as pg
-import io
 from routes.models import db 
 import datetime
 import flask_jwt_extended
