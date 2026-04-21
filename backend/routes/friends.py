@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, Response
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from sqlalchemy.exc import IntegrityError
-
-from .models import Activity, FriendRequest, Friendship, User, db, Blocked
+from werkzeug.utils import secure_filename
+from .models import Activity, FriendRequest, Friendship, User, db, Blocked, UserImage
 import os 
 import sendgrid
 from sendgrid.helpers.mail import Mail
@@ -227,7 +227,41 @@ def remove():
     return {"message": "friendship removed"}
 
     
+@friends_bp.route("/get_friends_and_status", methods=["POST"])
+@jwt_required()
+def get_friends_and_status():
+    user_id = get_jwt_identity()
+    now = datetime.utcnow()
 
+    # 1. Join Friendship with Activity
+    # We use a outerjoin (Left Join) so friends without activity still show up
+    results = (
+        db.session.query(
+            Friendship.friend_id,
+            Activity.is_active,
+            Activity.expires_at
+        )
+        .outerjoin(Activity, Friendship.friend_id == Activity.user_id)
+        .filter(Friendship.user_id == user_id)
+        .all()
+    )
+
+    friends_status = []
+    for friend_id, is_active, expires_at in results:
+        # 2. Logic to determine status based on activity and expiration
+        # Status is true only if is_active is True AND it hasn't expired yet
+        is_currently_active = (
+            is_active is True and 
+            expires_at is not None and 
+            expires_at > now
+        )
+
+        friends_status.append({
+            "friend_id": friend_id,
+            "status": "active" if is_currently_active else "offline"
+        })
+
+    return jsonify(friends_status)
 
 @friends_bp.route("/get_status", methods=["POST"])
 @jwt_required()
@@ -298,3 +332,45 @@ def unblock():
     db.session.delete(found)
     db.session.commit()
     return {"message": "friend unblocked"}
+
+@friends_bp.route("/update_photo", methods=["POST"])
+@jwt_required()
+def update_photo():
+    user_id = get_jwt_identity() 
+    photo = request.files.get('image')
+
+    if not photo:
+        return jsonify({"error": "No Image Uploaded!"}), 400
+
+    existing_image = UserImage.query.filter_by(user_id=user_id).first()
+
+    if existing_image:
+        existing_image.name = secure_filename(photo.filename)
+        existing_image.mimetype = photo.mimetype
+        existing_image.data = photo.read()
+        message = "Image updated successfully!"
+    else:
+        new_image = UserImage(
+            user_id=user_id,
+            name=secure_filename(photo.filename),
+            mimetype=photo.mimetype,
+            data=photo.read()
+        )
+        db.session.add(new_image)
+        message = "New image created!"
+
+    db.session.commit()
+    
+    return jsonify({"message": message}), 200
+    
+@friends_bp.route("/get_photo", methods=["POST"])
+@jwt_required()
+def get_photo():
+    user_id = get_jwt_identity() 
+
+    photo = UserImage.query.filter_by(user_id = user_id).first()
+
+    return Response(
+        photo.data, 
+        mimetype=photo.mimetype
+    )

@@ -34,9 +34,6 @@ class Blocked(db.Model):
     user_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False)
     friend_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False)
 
-
-
-
 # Calendar OAuth account (Google)
 class CalendarAccount(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -66,3 +63,17 @@ class AuthNonce(db.Model):
     nonce = db.Column(db.String(64), primary_key=True)
     username = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False, index=True)
     created_at = db.Column(db.DateTime, default=datetime.now(), nullable=False)
+
+class UserImage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String, db.ForeignKey("user.netid"), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    mimetype = db.Column(db.String(20), nullable=False)
+    data = db.Column(db.LargeBinary, nullable=False)
+
+class Calendar(db.Model):
+    __tablename__ = 'calendars'
+    id = db.Column(db.Integer, primary_key=True)
+    uid = db.Column(db.String, nullable=False, unique=True)
+    filename = db.Column(db.String, nullable=False)
+    content = db.Column(db.Text, nullable=False)

@@ -7,11 +7,11 @@
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 </script>
 
-<AppBar class="bg-zinc-400 dark:bg-zinc-900 justify-center h-auto">
+<AppBar class="justify-center h-auto bg-transparent">
 	<AppBar.Toolbar class="grid grid-cols-3 items-center">
 		<AppBar.Lead class="flex items-center">
 			<a href="/app.html">
-				<button type="button" class="Title">TigerConnect</button>
+				<div class="Title underglow">TigerConnect</div>
 			</a>
 		</AppBar.Lead>
 
@@ -50,10 +50,12 @@
 	}
 
 	.Title {
+		border-radius: 100px;
 		font-size: 2em;
-		font-weight: 700;
-		padding: 0em 1em;
-		@apply bg-transparent;
-		@apply text-black dark:text-white;
+		font-weight: 200;
+		@apply text-white;
+		@apply w-max;
+		--tw-bg-opacity: 0.015;
+    	background-color: rgba(0,0,0,var(--tw-bg-opacity));
 	}
 </style>

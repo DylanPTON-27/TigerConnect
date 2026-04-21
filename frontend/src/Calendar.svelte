@@ -251,6 +251,8 @@
 		const events = [];
 		let current = null;
 
+		userEventDict = {};
+
 		for (const line of lines) {
 			if (line === "BEGIN:VEVENT") {
 				current = {};

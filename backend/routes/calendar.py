@@ -2,7 +2,7 @@ import os
 import requests
 from datetime import datetime, timedelta, timezone
 from flask import Blueprint, request, jsonify, redirect, make_response
-from .models import db, CalendarAccount, CalendarEvent
+from .models import db, CalendarAccount, CalendarEvent, Calendar
 from flask_jwt_extended import get_jwt_identity, jwt_required, get_jwt
 from .friends import get_all_friends
 import psycopg as pg
@@ -224,39 +224,27 @@ def suggest():
     return jsonify({"suggestions": suggestions})
 
 # ------------------------------------------------------------------------------
-# POSTGRES .ICS CALENDAR
+# .ICS CALENDAR ROUTES
 # ------------------------------------------------------------------------------
 
 @calendar_bp.route('/get_cal', methods=['POST'])
 @jwt_required()
 def get_cal():
     user = get_jwt_identity()
-    users = get_all_friends(user)
-    users.append(user)
+    # Assuming get_all_friends returns a list of strings (NetIDs)
+    users_to_fetch = get_all_friends(user)
+    users_to_fetch.append(user)
     
-    with pg.connect(_pg_conninfo()) as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                CREATE TABLE IF NOT EXISTS calendars (
-                    id SERIAL PRIMARY KEY,
-                    uid TEXT NOT NULL UNIQUE,
-                    filename TEXT NOT NULL,
-                    content TEXT NOT NULL
-                )
-                """
-            )
-            cur.execute(
-                "SELECT content FROM calendars WHERE uid = ANY(%s);",
-                ((users, ))
-            )
-            rows = cur.fetchall()
-            content = ""
-            for row in rows:
-                content += row[0]
-            if not row:
-                return {"error": "no uploaded calendar found"}
-    response = make_response(content)
+    # Query using the IN operator
+    rows = Calendar.query.filter(Calendar.uid.in_(users_to_fetch)).all()
+    
+    if not rows:
+        return {"error": "no uploaded calendar found"}, 404
+        
+    # Combine all ics contents
+    combined_content = "".join([row.content for row in rows])
+    
+    response = make_response(combined_content)
     response.headers['Content-Type'] = 'text/calendar; charset=utf-8'
     return response
 
@@ -276,32 +264,33 @@ def clean_ics(content: str, user: str) -> str:
 def receive_cal():
     user = get_jwt_identity()
     file = request.files.get('file')
+    
     if not file:
         return {'error': 'missing file'}, 400
 
     is_ics = file.content_type == 'text/calendar' or file.filename.lower().endswith('.ics')
+    
     if is_ics:
-        with pg.connect(_pg_conninfo()) as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    CREATE TABLE IF NOT EXISTS calendars (
-                        id SERIAL PRIMARY KEY,
-                        uid TEXT NOT NULL UNIQUE,
-                        filename TEXT NOT NULL,
-                        content TEXT NOT NULL
-                    )
-                    """
-                )
-                content = file.read().decode('utf-8')
-                content = clean_ics(content, user)
-                cur.execute(
-                    """
-                    INSERT INTO calendars (uid, filename, content) values (%s, %s, %s)
-                    ON CONFLICT (uid) DO UPDATE SET filename = %s, content = %s;
-                    """,
-                    (user, file.filename, content, file.filename, content)
-                )
+        raw_content = file.read().decode('utf-8')
+        cleaned_content = clean_ics(raw_content, user)
+        
+        # Look for existing calendar for this user
+        cal = Calendar.query.filter_by(uid=user).first()
+        
+        if cal:
+            # Update existing
+            cal.filename = file.filename
+            cal.content = cleaned_content
+        else:
+            # Create new
+            new_cal = Calendar(
+                uid=user, 
+                filename=file.filename, 
+                content=cleaned_content
+            )
+            db.session.add(new_cal)
+            
+        db.session.commit()
         return 'Received!'
-    else:
-        return 'Wrong File Type!'
+    
+    return 'Wrong File Type!', 400
