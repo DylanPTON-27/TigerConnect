@@ -81,8 +81,9 @@ def login():
     # ensure user exists
     user = Users.query.filter_by(netid=username).first()
     if not user:
-        db.session.add(Users(netid=username, name=real_name, email=f"{username}@princeton.edu"))
+        user = db.session.add(Users(netid=username, name=real_name, email=f"{username}@princeton.edu"))
         db.session.flush()
+        db.session.refresh(user)
 
     # nonce to username
     nonce = os.urandom(20).hex()
