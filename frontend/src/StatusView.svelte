@@ -143,7 +143,7 @@
             onCheckedChange={handleToggle}
           >
           <Switch.Label class="h5">{checked ? "Free" : "Busy"}</Switch.Label>
-          <Switch.Control class="bg-zinc-500 data-[state=checked]:bg-[#FF8F1F]">
+          <Switch.Control class="bg-red-600 data-[state=checked]:bg-green-700">
             <Switch.Thumb />
           </Switch.Control>
           <Switch.HiddenInput />

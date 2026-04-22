@@ -37,18 +37,12 @@
 		margin-left: 5px;
 		padding: 0.8em 1em;
 		font-size: 1em;
-		font-weight: 600;
+		font-weight: 500;
 		font-family: inherit;
 		cursor: pointer;
 		transition: border-color 0.25s;
-		background: #111111;
-		color: #ffffff;
-		border: 1px solid #111111;
-	}
-	button:hover {
-		background: #ff8f1f;
-		border-color: #ff8f1f;
-		color: #111111;
+		@apply bg-black dark:bg-white;
+		@apply text-white dark:text-black;
 	}
 	button:focus,
 	button:focus-visible {
@@ -58,10 +52,10 @@
 	.Title {
 		border-radius: 100px;
 		font-size: 2em;
-		font-weight: 500;
-		letter-spacing: 0.2px;
-		color: #111111;
+		font-weight: 200;
+		@apply text-white;
 		@apply w-max;
-		background-color: transparent;
+		--tw-bg-opacity: 0.015;
+    	background-color: rgba(0,0,0,var(--tw-bg-opacity));
 	}
 </style>
