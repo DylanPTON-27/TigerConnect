@@ -124,14 +124,18 @@ def accept():
     existing_reverse = Friendship.query.filter_by(user_id=receiver, friend_id=sender).first()
 
     db.session.delete(to_delete)
+
+    new_friendships = []
     if not existing_forward:
-        db.session.add(Friendship(user_id=sender, friend_id=receiver))
+        new_friendships.append(Friendship(user_id=sender, friend_id=receiver))
     if not existing_reverse:
-        db.session.add(Friendship(user_id=receiver, friend_id=sender))
+        new_friendships.append(Friendship(user_id=receiver, friend_id=sender))
 
     try:
+        db.session.add_all(new_friendships)
         db.session.commit()
-    except IntegrityError:
+    except IntegrityError as e:
+        print(e)
         # Handle duplicate/constraint races gracefully for demo and prod.
         db.session.rollback()
 

@@ -10,6 +10,7 @@
 	let requestMessage = $state("");
 
 	async function loadFriends() {
+		friends = [];
 		const token = sessionStorage.getItem("accessToken");
 		if (!token) return;
 

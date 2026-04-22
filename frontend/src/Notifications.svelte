@@ -24,9 +24,6 @@
 		if (res.ok) {
 			requests = await res.json();
 			areNotifications = requests.length > 0;
-			if (!areNotifications) {
-				console.log("glowing");
-			}
 		}
 	}
 
