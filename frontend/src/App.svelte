@@ -14,8 +14,6 @@
 		if (!res.ok) return;
 
 		const [username, accessToken, refreshToken, displayName] = await res.json();
-		console.log(username);
-		console.log(displayName);
 		sessionStorage.setItem("username", username);
 		sessionStorage.setItem("accessToken", accessToken);
 		sessionStorage.setItem("refreshToken", refreshToken);
