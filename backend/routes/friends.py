@@ -37,10 +37,10 @@ def send_request():
     if not receiver:
         return {"error": "missing receiver"}, 400
 
-    pattern = r'[A-Za-z]{2}[0-9]{4}'
-    valid_netid = bool(re.fullmatch(pattern, sender))
-    if not valid_netid:
-         return {"error": "not valid netid"}, 400
+    # pattern = r'[A-Za-z]{2}[0-9]{4}'
+    # valid_netid = bool(re.fullmatch(pattern, sender))
+    # if not valid_netid:
+    #      return {"error": "not valid netid"}, 400
 
 
 

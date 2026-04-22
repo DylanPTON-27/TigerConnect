@@ -104,7 +104,6 @@ def get_tokens():
     username = row.username
     
     display_name = Users.query.filter_by(netid=username).first().name
-    print(display_name)
 
     db.session.delete(row)
     db.session.commit()
