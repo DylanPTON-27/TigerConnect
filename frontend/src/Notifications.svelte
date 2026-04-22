@@ -45,6 +45,7 @@
 		if (res.ok) {
 			requests = requests.filter((r) => (Array.isArray(r) ? r[0] : r) !== (Array.isArray(sender) ? sender[0] : sender));
 			window.dispatchEvent(new Event("friends:changed"));
+			areNotifications = requests.length > 0;
 		}
 	}
 </script>

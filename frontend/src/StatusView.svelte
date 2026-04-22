@@ -83,8 +83,8 @@
       checked = !!data.is_active || !!data;
     }
 
-    uname = sessionStorage.getItem("username");
-    initials = uname.substring(0, 2).toUpperCase();
+    uname = sessionStorage.getItem("displayName");
+    initials = sessionStorage.getItem("username").substring(0, 2).toUpperCase();
   }
 
 

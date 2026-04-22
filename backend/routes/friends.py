@@ -4,7 +4,7 @@ from flask import Blueprint, jsonify, request, Response
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
-from .models import Activity, FriendRequest, Friendship, User, db, Blocked, UserImage
+from .models import Activity, FriendRequest, Friendship, Users, db, Blocked, UserImage
 import os 
 import sendgrid
 from sendgrid.helpers.mail import Mail
@@ -48,12 +48,12 @@ def send_request():
         return {"error": "cannot friend yourself"}, 400
 
     # Demo-friendly: ensure receiver exists to satisfy FK constraints.
-    sender_user = User.query.filter_by(netid=sender).first()
+    sender_user = Users.query.filter_by(netid=sender).first()
     if not sender_user:
-        db.session.add(User(netid=sender, name=sender, email=f"{sender}@princeton.edu"))
-    receiver_user = User.query.filter_by(netid=receiver).first()
+        db.session.add(Users(netid=sender, name=sender, email=f"{sender}@princeton.edu"))
+    receiver_user = Users.query.filter_by(netid=receiver).first()
     if not receiver_user:
-        db.session.add(User(netid=receiver, name=receiver, email=f"{receiver}@princeton.edu"))
+        db.session.add(Users(netid=receiver, name=receiver, email=f"{receiver}@princeton.edu"))
 
     existing = FriendRequest.query.filter_by(sender_id=sender, receiver_id=receiver).first()
     if existing:
@@ -113,12 +113,12 @@ def accept():
         return {"error": "request not found"}, 404
 
     # Ensure users exist (defensive for old/partial data states).
-    sender_user = User.query.filter_by(netid=sender).first()
+    sender_user = Users.query.filter_by(netid=sender).first()
     if not sender_user:
-        db.session.add(User(netid=sender, name=sender, email=f"{sender}@princeton.edu"))
-    receiver_user = User.query.filter_by(netid=receiver).first()
+        db.session.add(Users(netid=sender, name=sender, email=f"{sender}@princeton.edu"))
+    receiver_user = Users.query.filter_by(netid=receiver).first()
     if not receiver_user:
-        db.session.add(User(netid=receiver, name=receiver, email=f"{receiver}@princeton.edu"))
+        db.session.add(Users(netid=receiver, name=receiver, email=f"{receiver}@princeton.edu"))
 
     existing_forward = Friendship.query.filter_by(user_id=sender, friend_id=receiver).first()
     existing_reverse = Friendship.query.filter_by(user_id=receiver, friend_id=sender).first()
@@ -236,25 +236,23 @@ def remove():
 @jwt_required()
 def get_friends_and_status():
     user_id = get_jwt_identity()
-    now = datetime.utcnow()
+    now = datetime.now()
 
-    # 1. Join Friendship with Activity
-    # We use a outerjoin (Left Join) so friends without activity still show up
     results = (
         db.session.query(
             Friendship.friend_id,
+            Users.name,
             Activity.is_active,
             Activity.expires_at
         )
+        .join(Users, Friendship.friend_id == Users.netid)
         .outerjoin(Activity, Friendship.friend_id == Activity.user_id)
         .filter(Friendship.user_id == user_id)
         .all()
     )
 
     friends_status = []
-    for friend_id, is_active, expires_at in results:
-        # 2. Logic to determine status based on activity and expiration
-        # Status is true only if is_active is True AND it hasn't expired yet
+    for friend_id, name, is_active, expires_at in results:
         is_currently_active = (
             is_active is True and 
             expires_at is not None and 
@@ -262,7 +260,8 @@ def get_friends_and_status():
         )
 
         friends_status.append({
-            "friend_id": friend_id,
+            "netid": friend_id,
+            "name": name,
             "status": "active" if is_currently_active else "offline"
         })
 

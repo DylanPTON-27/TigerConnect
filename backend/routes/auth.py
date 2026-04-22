@@ -6,7 +6,7 @@ import urllib.request
 
 import flask
 import flask_jwt_extended
-from .models import db, User, AuthNonce
+from .models import db, Users, AuthNonce
 
 auth_bp = flask.Blueprint("auth", __name__)
 
@@ -73,11 +73,14 @@ def login():
         return flask.redirect(login_url)
 
     username = userinfo["user"].strip().lower()
+    real_name = userinfo["attributes"]["pudisplayname"][0]
+    real_name = real_name.split(", ")
+    real_name = f"{real_name[1]} {real_name[0]}"
 
     # ensure user exists
-    user = User.query.filter_by(netid=username).first()
+    user = Users.query.filter_by(netid=username).first()
     if not user:
-        db.session.add(User(netid=username, name=username, email=f"{username}@princeton.edu"))
+        db.session.add(Users(netid=username, name=real_name, email=f"{username}@princeton.edu"))
         db.session.flush()
 
     # nonce to username
@@ -99,13 +102,17 @@ def get_tokens():
         return flask.jsonify({"error": "invalid nonce"}), 400
 
     username = row.username
+    
+    display_name = Users.query.filter_by(netid=username).first().name
+    print(display_name)
+
     db.session.delete(row)
     db.session.commit()
 
     access_token = flask_jwt_extended.create_access_token(identity=username)
     refresh_token = flask_jwt_extended.create_refresh_token(identity=username)
 
-    return flask.jsonify([username, access_token, refresh_token])
+    return flask.jsonify([username, access_token, refresh_token, display_name])
 
 
 @auth_bp.route("/api/refreshaccesstoken", methods=["POST"])

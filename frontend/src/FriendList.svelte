@@ -99,7 +99,7 @@
 	{#each friends as friend}
 		<button type="button" class="names">
 			<div>
-				<span class="truncate">{friend.friend_id}</span>
+				<span class="truncate">{friend.name}</span>
 			</div>
 			<div>
 				{#if friend.status === 'offline'}

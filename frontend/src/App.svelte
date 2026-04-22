@@ -13,10 +13,13 @@
 		const res = await fetch(`${API_BASE}/api/gettokens?nonce=${encodeURIComponent(nonce)}`);
 		if (!res.ok) return;
 
-		const [username, accessToken, refreshToken] = await res.json();
+		const [username, accessToken, refreshToken, displayName] = await res.json();
+		console.log(username);
+		console.log(displayName);
 		sessionStorage.setItem("username", username);
 		sessionStorage.setItem("accessToken", accessToken);
 		sessionStorage.setItem("refreshToken", refreshToken);
+		sessionStorage.setItem("displayName", displayName);
 
 		url.searchParams.delete("nonce");
 		history.replaceState({}, "", url.toString());
@@ -35,6 +38,7 @@
 			sessionStorage.removeItem("username");
 			sessionStorage.removeItem("accessToken");
 			sessionStorage.removeItem("refreshToken");
+			sessionStorage.removeItem("displayName");
 			window.location.href = "/login";
         	return;
 		}
