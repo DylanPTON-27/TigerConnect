@@ -99,7 +99,8 @@ def get_all_friends(user_id):
 @friends_bp.route("/accept", methods=["POST"])
 @jwt_required()
 def accept():
-    sender = (request.form.get("sender")).strip().lower()
+    data = request.get_json(silent=True)
+    sender = (data.get("sender")).strip().lower()
     print(sender)
     receiver = get_jwt_identity()
     if not sender:

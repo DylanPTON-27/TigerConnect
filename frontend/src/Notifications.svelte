@@ -6,6 +6,7 @@
 
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 	let requests = $state([]);
+	let areNotifications = $state(false);
 
 	async function fetchNotifications () {
 		await waitForToken("accessToken");
@@ -22,6 +23,10 @@
 		});
 		if (res.ok) {
 			requests = await res.json();
+			areNotifications = requests.length > 0;
+			if (!areNotifications) {
+				console.log("glowing");
+			}
 		}
 	}
 
@@ -35,6 +40,7 @@
 		const res = await fetch(`${API_BASE}/friends/${endpoint}`, {
 			method: "POST",
 			headers: {
+				"Content-Type": "application/json",
 				Authorization: `Bearer ${token}`,
 			},
 			body: JSON.stringify({ sender: Array.isArray(sender) ? sender[0] : sender }),
@@ -47,7 +53,11 @@
 </script>
 
 <Popover>
-	<Popover.Trigger><Bell class="size-9.5 rounded-xl p-1 border-2" /></Popover.Trigger>
+	<Popover.Trigger>
+		<div class={areNotifications ? 'rounded-xl active' : 'rounded-xl'}>
+			<Bell class="size-9.5 rounded-xl p-1 border-2"/>
+		</div>
+	</Popover.Trigger>
 	<Popover.Positioner class="z-1!">
 		<Popover.Content class="card w-96 p-4 bg-surface-100-900 shadow-xl">
 			<div class="space-y-4">
@@ -118,5 +128,23 @@
 	button:focus,
 	button:focus-visible {
 		outline: 4px auto -webkit-focus-ring-color;
+	}
+
+	.active {
+		animation: notified 1s infinite;
+	}
+
+	@keyframes notified {
+		0% {
+			background-color: rgba(255, 0, 0, 0); 
+		}
+
+		50% {
+			background-color: rgba(255, 0, 0, 0.5); 
+		}
+
+		100% {
+			background-color: rgba(255, 0, 0, 0); 
+		}
 	}
 </style>
