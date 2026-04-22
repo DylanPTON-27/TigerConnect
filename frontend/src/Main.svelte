@@ -49,6 +49,8 @@
 	}
 
 	:global(.indicators[data-current]) {
-		@apply bg-gray-500;
+		@apply text-black;
+		background-color: #ff8f1f;
+		border-color: #e77500;
 	}
 </style>

@@ -6,18 +6,19 @@
 
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+
+  --tc-orange: #ff8f1f;
+  --tc-orange-deep: #e77500;
+  --tc-black: #111111;
+  --tc-cream: #fffaf2;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-[data-mode="dark"], [data-mode="light"] {
-  transition: 0.25s ease, 0.25s ease;
 }
 
 body {
@@ -26,6 +27,12 @@ body {
   min-height: 100vh;
   height: 100%;
   overflow: hidden;
+  background: linear-gradient(180deg, var(--tc-cream) 0%, #ffffff 65%);
+  color: var(--tc-black);
+}
+
+[data-mode="dark"], [data-mode="light"] {
+  transition: 0.25s ease, 0.25s ease;
 }
 
 a {
@@ -108,18 +115,17 @@ h3 {
     margin-right: 10%;
 	}
 
-	.underglow::after {
-		position: absolute;
-		content: "";
-		top: 15%; left: -10%; right: 0; z-index: -1; height: 80%; width: 120%;
-		transform: scale(0.9) translateZ(0);
-    backdrop-filter: blur(15px);
-		filter: blur(15px);
-		background: linear-gradient(to left, #ff5770, #e4428d, #c42da8, #9e16c3, #6501de, #9e16c3, #c42da8, #e4428d,#ff5770);
-		background-size: 200% 200%;
-		-webkit-animation: animateGlow 5s linear infinite;
-		animation: animateGlow 5s linear infinite;
-	}
+.underglow::after {
+  position: absolute;
+  content: "";
+  top: 18%; left: -8%; right: 0; z-index: -1; height: 72%; width: 116%;
+  transform: scale(0.9) translateZ(0);
+  backdrop-filter: blur(10px);
+  filter: blur(12px);
+  background: linear-gradient(to left, #ffd6a6, #ffb457, #ff8f1f, #e77500, #ff8f1f, #ffb457, #ffd6a6);
+  background-size: 200% 200%;
+  animation: animateGlow 6s linear infinite;
+}
 
 	@-webkit-keyframes animateGlow {
 		0% {
