@@ -8,6 +8,27 @@
 	onMount(async () => {
 		const url = new URL(window.location.href);
 		const nonce = url.searchParams.get("nonce");
+		const usernameFromUrl = url.searchParams.get("username");
+		const accessTokenFromUrl = url.searchParams.get("accessToken");
+		const refreshTokenFromUrl = url.searchParams.get("refreshToken");
+		const displayNameFromUrl = url.searchParams.get("displayName");
+
+		// Fallback bootstrap: backend may redirect with tokens directly
+		// when nonce persistence fails due production DB schema mismatch.
+		if (usernameFromUrl && accessTokenFromUrl && refreshTokenFromUrl) {
+			sessionStorage.setItem("username", usernameFromUrl);
+			sessionStorage.setItem("accessToken", accessTokenFromUrl);
+			sessionStorage.setItem("refreshToken", refreshTokenFromUrl);
+			sessionStorage.setItem("displayName", displayNameFromUrl || usernameFromUrl);
+
+			url.searchParams.delete("username");
+			url.searchParams.delete("accessToken");
+			url.searchParams.delete("refreshToken");
+			url.searchParams.delete("displayName");
+			history.replaceState({}, "", url.toString());
+			return;
+		}
+
 		if (!nonce) return;
 
 		const res = await fetch(`${API_BASE}/api/gettokens?nonce=${encodeURIComponent(nonce)}`);

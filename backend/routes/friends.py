@@ -373,6 +373,8 @@ def get_photo():
     user_id = get_jwt_identity() 
 
     photo = UserImage.query.filter_by(user_id = user_id).first()
+    if not photo:
+        return jsonify({"error": "No profile photo found"}), 404
 
     return Response(
         photo.data, 
