@@ -83,7 +83,6 @@ def login():
     if not user:
         user = db.session.add(Users(netid=username, name=real_name, email=f"{username}@princeton.edu"))
         db.session.flush()
-        db.session.refresh(user)
 
     # nonce to username
     nonce = os.urandom(20).hex()

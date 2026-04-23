@@ -343,7 +343,7 @@ def update_photo():
     user_id = get_jwt_identity() 
     photo = request.files.get('image')
 
-    if not photo:
+    if photo is None:
         return jsonify({"error": "No Image Uploaded!"}), 400
 
     existing_image = UserImage.query.filter_by(user_id=user_id).first()
@@ -373,7 +373,7 @@ def get_photo():
     user_id = get_jwt_identity() 
 
     photo = UserImage.query.filter_by(user_id = user_id).first()
-    if not photo:
+    if photo is None:
         return jsonify({"error": "No profile photo found"}), 404
 
     return Response(
