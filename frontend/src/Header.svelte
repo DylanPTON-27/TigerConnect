@@ -1,10 +1,18 @@
 <script>
-	// @ts-ignore
 	import { AppBar } from "@skeletonlabs/skeleton-svelte";
 	import Notifications from "./Notifications.svelte";
 	import Switch from "./Switch.svelte";
 
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+
+	function handleLogout() {
+		sessionStorage.removeItem("username");
+		sessionStorage.removeItem("accessToken");
+		sessionStorage.removeItem("refreshToken");
+		sessionStorage.removeItem("displayName");
+		window.location.href = `${API_BASE}/logoutapp`;
+		return;
+	}
 </script>
 
 <AppBar class="justify-center h-auto bg-transparent">
@@ -20,9 +28,7 @@
 		<AppBar.Trail class="justify-self-end">
 			<Switch />
 			<Notifications />
-			<a href={`${API_BASE}/logoutapp`}>
-				<button type="button" class="btn hover:preset-tonal">Log Out</button>
-			</a>
+			<button type="button" class="btn hover:preset-tonal" onclick={handleLogout}>Log Out</button>
 		</AppBar.Trail>
 	</AppBar.Toolbar>
 </AppBar>
