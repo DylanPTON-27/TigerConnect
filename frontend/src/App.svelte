@@ -70,7 +70,7 @@
 
 	onMount(async () => {
 		await waitForToken("accessToken");
-		refreshToken();
+		// refreshToken();
 		setInterval(refreshToken, 1_800_000); // 30 minutes
 	});
 </script>
