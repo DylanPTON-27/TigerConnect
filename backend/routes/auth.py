@@ -11,8 +11,11 @@ from .models import db, Users, AuthNonce
 
 auth_bp = flask.Blueprint("auth", __name__)
 
-CAS_URL = os.getenv("CAS_URL", "https://fed.princeton.edu/cas/")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173/app.html")
+CAS_URL = os.getenv("CAS_URL", "https://fed.princeton.edu/cas/").rstrip("/") + "/"
+IS_DEV = os.getenv("FLASK_ENV", "").lower() == "development"
+FRONTEND_URL = os.getenv("FRONTEND_URL") or ("http://localhost:5173/app.html" if IS_DEV else "")
+if not FRONTEND_URL:
+    raise RuntimeError("FRONTEND_URL must be set in non-development environments.")
 
 
 def _frontend_landing_url() -> str:
@@ -23,6 +26,46 @@ def _frontend_landing_url() -> str:
     elif path.endswith("app.html"):
         path = path[: -len("app.html")] or "/"
     return urllib.parse.urlunsplit((parsed.scheme, parsed.netloc, path, "", ""))
+
+
+def _display_name_from_cas(userinfo: dict, username: str) -> str:
+    attributes = (userinfo or {}).get("attributes") or {}
+    raw = attributes.get("pudisplayname")
+    if isinstance(raw, list):
+        raw = raw[0] if raw else None
+    if isinstance(raw, str):
+        value = raw.strip()
+        if value:
+            if "," in value:
+                last, first = [part.strip() for part in value.split(",", 1)]
+                if first and last:
+                    return f"{first} {last}"
+            return value
+    return username
+
+
+def _ensure_user(username: str, display_name: str | None = None) -> Users:
+    user = Users.query.filter_by(netid=username).first()
+    if user:
+        changed = False
+        if display_name and not user.name:
+            user.name = display_name
+            changed = True
+        if not user.email:
+            user.email = f"{username}@princeton.edu"
+            changed = True
+        if changed:
+            db.session.flush()
+        return user
+
+    user = Users(
+        netid=username,
+        name=display_name or username,
+        email=f"{username}@princeton.edu",
+    )
+    db.session.add(user)
+    db.session.flush()
+    return user
 
 
 # Helper Functions
@@ -73,16 +116,13 @@ def login():
         login_url = CAS_URL + "login?service=" + urllib.parse.quote(strip_ticket(flask.request.url))
         return flask.redirect(login_url)
 
-    username = userinfo["user"].strip().lower()
-    real_name = userinfo["attributes"]["pudisplayname"][0]
-    real_name = real_name.split(", ")
-    real_name = f"{real_name[1]} {real_name[0]}"
+    username = str(userinfo.get("user", "")).strip().lower()
+    if not username:
+        login_url = CAS_URL + "login?service=" + urllib.parse.quote(strip_ticket(flask.request.url))
+        return flask.redirect(login_url)
 
-    # ensure user exists
-    user = Users.query.filter_by(netid=username).first()
-    if not user:
-        user = db.session.add(Users(netid=username, name=real_name, email=f"{username}@princeton.edu"))
-        db.session.flush()
+    real_name = _display_name_from_cas(userinfo, username)
+    _ensure_user(username, real_name)
 
     # nonce to username
     nonce = os.urandom(20).hex()
@@ -93,6 +133,11 @@ def login():
         # Production safety fallback: if nonce FK constraints are out of sync,
         # continue login by redirecting with short-lived tokens instead of nonce handoff.
         db.session.rollback()
+        try:
+            _ensure_user(username, real_name)
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
         access_token = flask_jwt_extended.create_access_token(identity=username)
         refresh_token = flask_jwt_extended.create_refresh_token(identity=username)
         query = urllib.parse.urlencode({
@@ -117,8 +162,8 @@ def get_tokens():
         return flask.jsonify({"error": "invalid nonce"}), 400
 
     username = row.username
-    
-    display_name = Users.query.filter_by(netid=username).first().name
+    user = _ensure_user(username, username)
+    display_name = user.name or username
 
     db.session.delete(row)
     db.session.commit()
@@ -133,6 +178,8 @@ def get_tokens():
 @flask_jwt_extended.jwt_required(refresh=True)
 def refresh_access_token():
     username = flask_jwt_extended.get_jwt_identity()
+    _ensure_user(username, username)
+    db.session.commit()
     new_access = flask_jwt_extended.create_access_token(identity=username)
     return flask.jsonify(new_access)
 

@@ -18,6 +18,19 @@ GOOGLE_CAL_EVENTS = "https://www.googleapis.com/calendar/v3/calendars/primary/ev
 
 SCOPES = "https://www.googleapis.com/auth/calendar.readonly"
 
+
+def _google_oauth_config_error():
+    missing = []
+    if not GOOGLE_CLIENT_ID:
+        missing.append("GOOGLE_CLIENT_ID")
+    if not GOOGLE_CLIENT_SECRET:
+        missing.append("GOOGLE_CLIENT_SECRET")
+    if not GOOGLE_REDIRECT_URI:
+        missing.append("GOOGLE_REDIRECT_URI")
+    if missing:
+        return {"error": f"google oauth not configured: missing {', '.join(missing)}"}, 500
+    return None
+
 def utc_dt(iso_str):
     return datetime.fromisoformat(iso_str.replace("Z", "+00:00")).astimezone(timezone.utc)
 
@@ -31,6 +44,10 @@ def _pg_conninfo() -> str:
 @calendar_bp.route("/auth/start", methods=["GET"])
 @jwt_required()
 def auth_start():
+    config_error = _google_oauth_config_error()
+    if config_error:
+        return config_error
+
     user = get_jwt_identity()
     params = {
         "client_id": GOOGLE_CLIENT_ID,
@@ -46,20 +63,36 @@ def auth_start():
 
 @calendar_bp.route("/auth/callback", methods=["GET"])
 def auth_callback():
+    config_error = _google_oauth_config_error()
+    if config_error:
+        return config_error
+
     code = request.args.get("code")
     user = request.args.get("state")
     if not code or not user:
         return {"error": "missing code/state"}, 400
 
-    token_resp = requests.post(GOOGLE_TOKEN_URL, data={
-        "code": code,
-        "client_id": GOOGLE_CLIENT_ID,
-        "client_secret": GOOGLE_CLIENT_SECRET,
-        "redirect_uri": GOOGLE_REDIRECT_URI,
-        "grant_type": "authorization_code"
-    }).json()
+    try:
+        token_http = requests.post(
+            GOOGLE_TOKEN_URL,
+            data={
+                "code": code,
+                "client_id": GOOGLE_CLIENT_ID,
+                "client_secret": GOOGLE_CLIENT_SECRET,
+                "redirect_uri": GOOGLE_REDIRECT_URI,
+                "grant_type": "authorization_code",
+            },
+            timeout=10,
+        )
+        token_resp = token_http.json()
+    except requests.RequestException:
+        return {"error": "google token exchange failed"}, 502
+    except ValueError:
+        return {"error": "invalid google token response"}, 502
 
-    access_token = token_resp["access_token"]
+    access_token = token_resp.get("access_token")
+    if not access_token:
+        return {"error": "missing access token from provider", "provider_response": token_resp}, 400
     refresh_token = token_resp.get("refresh_token")
     expires_in = token_resp.get("expires_in", 3600)
     expires_at = datetime.now() + timedelta(seconds=expires_in)
@@ -79,15 +112,29 @@ def auth_callback():
     return {"message": "calendar connected"}
 
 def refresh_access_token(acct: CalendarAccount):
+    config_error = _google_oauth_config_error()
+    if config_error:
+        return False
     if not acct.refresh_token:
         return False
-    token_resp = requests.post(GOOGLE_TOKEN_URL, data={
-        "client_id": GOOGLE_CLIENT_ID,
-        "client_secret": GOOGLE_CLIENT_SECRET,
-        "refresh_token": acct.refresh_token,
-        "grant_type": "refresh_token"
-    }).json()
-    acct.access_token = token_resp["access_token"]
+    try:
+        token_http = requests.post(
+            GOOGLE_TOKEN_URL,
+            data={
+                "client_id": GOOGLE_CLIENT_ID,
+                "client_secret": GOOGLE_CLIENT_SECRET,
+                "refresh_token": acct.refresh_token,
+                "grant_type": "refresh_token",
+            },
+            timeout=10,
+        )
+        token_resp = token_http.json()
+    except (requests.RequestException, ValueError):
+        return False
+    access_token = token_resp.get("access_token")
+    if not access_token:
+        return False
+    acct.access_token = access_token
     expires_in = token_resp.get("expires_in", 3600)
     acct.expires_at = datetime.now() + timedelta(seconds=expires_in)
     db.session.commit()
@@ -111,7 +158,10 @@ def sync_calendar():
 
     headers = {"Authorization": f"Bearer {acct.access_token}"}
     params = {"timeMin": time_min, "timeMax": time_max, "singleEvents": True, "orderBy": "startTime"}
-    resp = requests.get(GOOGLE_CAL_EVENTS, headers=headers, params=params)
+    try:
+        resp = requests.get(GOOGLE_CAL_EVENTS, headers=headers, params=params, timeout=15)
+    except requests.RequestException:
+        return {"error": "failed to fetch events"}, 502
     if resp.status_code != 200:
         return {"error": "failed to fetch events"}, 400
 

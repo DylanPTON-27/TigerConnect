@@ -386,7 +386,7 @@
 	})
 </script>
 
-<div class="mx-auto mb-3 w-[90%] flex items-center gap-3">
+<div class="mx-auto mt-3 mb-3 w-[90%] flex items-center gap-3">
 	<label class="upload-btn cursor-pointer">
 		Upload .ics
 		<input type="file" accept=".ics,text/calendar" class="hidden" onchange={onFileChange} />

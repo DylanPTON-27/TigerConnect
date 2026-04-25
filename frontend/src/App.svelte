@@ -4,6 +4,17 @@
     import { onMount } from "svelte";
 	import { waitForToken } from './helpers.svelte';
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+
+	function clearAuth() {
+		sessionStorage.removeItem("username");
+		sessionStorage.removeItem("accessToken");
+		sessionStorage.removeItem("refreshToken");
+		sessionStorage.removeItem("displayName");
+	}
+
+	function redirectToLogin() {
+		window.location.href = `${API_BASE}/login`;
+	}
 	
 	onMount(async () => {
 		const url = new URL(window.location.href);
@@ -26,26 +37,39 @@
 			url.searchParams.delete("refreshToken");
 			url.searchParams.delete("displayName");
 			history.replaceState({}, "", url.toString());
-			return;
 		}
 
-		if (!nonce) return;
+		if (nonce) {
+			const res = await fetch(`${API_BASE}/api/gettokens?nonce=${encodeURIComponent(nonce)}`);
+			if (!res.ok) {
+				clearAuth();
+				redirectToLogin();
+				return;
+			}
 
-		const res = await fetch(`${API_BASE}/api/gettokens?nonce=${encodeURIComponent(nonce)}`);
-		if (!res.ok) return;
+			const [username, accessToken, refreshToken, displayName] = await res.json();
+			sessionStorage.setItem("username", username);
+			sessionStorage.setItem("accessToken", accessToken);
+			sessionStorage.setItem("refreshToken", refreshToken);
+			sessionStorage.setItem("displayName", displayName);
 
-		const [username, accessToken, refreshToken, displayName] = await res.json();
-		sessionStorage.setItem("username", username);
-		sessionStorage.setItem("accessToken", accessToken);
-		sessionStorage.setItem("refreshToken", refreshToken);
-		sessionStorage.setItem("displayName", displayName);
+			url.searchParams.delete("nonce");
+			history.replaceState({}, "", url.toString());
+		}
 
-		url.searchParams.delete("nonce");
-		history.replaceState({}, "", url.toString());
+		if (!sessionStorage.getItem("accessToken")) {
+			redirectToLogin();
+		}
 	});
 
 	async function refreshToken() {
-		const token = sessionStorage.getItem("refreshToken")
+		const token = sessionStorage.getItem("refreshToken");
+		if (!token) {
+			clearAuth();
+			redirectToLogin();
+			return;
+		}
+
 		const res = await fetch(`${API_BASE}/api/refreshaccesstoken`, {
 			method: "POST",
 			headers: {
@@ -54,11 +78,8 @@
 		});
 
 		if (res.status === 401 || res.status === 422) {
-			sessionStorage.removeItem("username");
-			sessionStorage.removeItem("accessToken");
-			sessionStorage.removeItem("refreshToken");
-			sessionStorage.removeItem("displayName");
-			window.location.href = "/login";
+			clearAuth();
+			redirectToLogin();
         	return;
 		}
 
@@ -70,7 +91,7 @@
 
 	onMount(async () => {
 		await waitForToken("accessToken");
-		// refreshToken();
+		await refreshToken();
 		setInterval(refreshToken, 1_800_000); // 30 minutes
 	});
 </script>

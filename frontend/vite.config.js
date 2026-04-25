@@ -10,6 +10,8 @@ export default defineConfig({
 	],
 	server: {
 		proxy: {
+			'/login': 'http://localhost:8000',
+			'/logoutapp': 'http://localhost:8000',
 			'/api': 'http://localhost:8000',
 			'/friends': 'http://localhost:8000',
 			'/calendar': 'http://localhost:8000',
