@@ -387,12 +387,12 @@
 </script>
 
 <div class="mx-auto mb-3 w-[90%] flex items-center gap-3">
-	<label class="btn preset-filled cursor-pointer">
+	<label class="upload-btn cursor-pointer">
 		Upload .ics
 		<input type="file" accept=".ics,text/calendar" class="hidden" onchange={onFileChange} />
 	</label>
 	{#if statusMessage}
-		<span class="text-sm">{statusMessage}</span>
+		<span class="text-sm status-message">{statusMessage}</span>
 	{/if}
 </div>
 
@@ -427,6 +427,10 @@
 		height: 68vh;
 		max-height: 90vh;
 		margin: auto;
+		border: 1px solid rgba(17, 17, 17, 0.12);
+		border-radius: 12px;
+		overflow: hidden;
+		background: #ffffff;
 	}
 
 	.toggler {
@@ -436,14 +440,34 @@
 		justify-content: center;
 		align-items: center;
 		padding: 5px;
-		border-radius: 5px;
-
-		@apply bg-black dark:bg-white;
-		@apply text-white dark:text-black;
+		border-radius: 8px;
+		border: 1px solid rgba(17, 17, 17, 0.12);
+		background: #ffffff;
+		color: #111111;
 	}
 
 	.toggler label {
 		margin-left: 1vw;
 		margin-right: 1vw;
+	}
+
+	.upload-btn {
+		border: 1px solid #111111;
+		background: #111111;
+		color: #ffffff;
+		border-radius: 10px;
+		padding: 0.55rem 0.9rem;
+		font-weight: 600;
+		transition: all 0.2s ease;
+	}
+
+	.upload-btn:hover {
+		background: #ff8f1f;
+		border-color: #ff8f1f;
+		color: #111111;
+	}
+
+	.status-message {
+		color: #2d2d2d;
 	}
 </style>

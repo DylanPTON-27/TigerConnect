@@ -15,8 +15,8 @@
 	}
 </script>
 
-<AppBar class="justify-center h-auto bg-transparent">
-	<AppBar.Toolbar class="grid grid-cols-3 items-center">
+<AppBar class="justify-center h-auto w-full tc-surface">
+	<AppBar.Toolbar class="grid grid-cols-3 items-center px-3 py-1">
 		<AppBar.Lead class="flex items-center">
 			<a href="/app.html">
 				<img class="brand-logo" src="/tigerconnect-logo.png" alt="TigerConnect" />
@@ -28,7 +28,7 @@
 		<AppBar.Trail class="justify-self-end">
 			<Switch />
 			<Notifications />
-			<button type="button" class="btn hover:preset-tonal" onclick={handleLogout}>Log Out</button>
+			<button type="button" class="logout-btn" onclick={handleLogout}>Log Out</button>
 		</AppBar.Trail>
 	</AppBar.Toolbar>
 </AppBar>
@@ -38,25 +38,35 @@
 	@custom-variant dark (&:where([data-mode=dark], [data-mode=dark] *));
 
 	button {
-		border-radius: 8px;
+		border-radius: 10px;
 		margin-right: 5px;
 		margin-left: 5px;
-		padding: 0.8em 1em;
+		padding: 0.65em 0.95em;
 		font-size: 1em;
-		font-weight: 500;
+		font-weight: 600;
 		font-family: inherit;
 		cursor: pointer;
-		transition: border-color 0.25s;
-		@apply bg-black dark:bg-white;
-		@apply text-white dark:text-black;
+		transition: all 0.2s ease;
 	}
 	button:focus,
 	button:focus-visible {
 		outline: 4px auto -webkit-focus-ring-color;
 	}
 
+	.logout-btn {
+		border: 1px solid #111111;
+		background: #111111;
+		color: #ffffff;
+	}
+
+	.logout-btn:hover {
+		background: #ff8f1f;
+		border-color: #ff8f1f;
+		color: #111111;
+	}
+
 	.brand-logo {
-		height: 3.1rem;
+		height: 2.7rem;
 		width: auto;
 		display: block;
 	}

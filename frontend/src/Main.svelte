@@ -39,16 +39,21 @@
 	}
 
 	:global(.indicators) {
-		@apply text-[2vh];
-		@apply h-[5vh] w-auto;
-		@apply border-2;
+		@apply text-sm;
+		@apply h-[4.2vh] w-auto;
+		@apply border;
 		@apply ml-0.75 mr-0.75;
 		@apply rounded-xl;
-		@apply p-2;
+		@apply px-3;
 		@apply flex items-center justify-center;
+		background: #ffffff;
+		border-color: rgba(17, 17, 17, 0.12);
+		color: #111111;
 	}
 
 	:global(.indicators[data-current]) {
-		@apply bg-gray-500;
+		background: #ff8f1f;
+		border-color: #ff8f1f;
+		color: #111111;
 	}
 </style>

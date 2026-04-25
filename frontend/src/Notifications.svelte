@@ -53,11 +53,14 @@
 <Popover>
 	<Popover.Trigger>
 		<div class={areNotifications ? 'rounded-xl active' : 'rounded-xl'}>
-			<Bell class="size-9.5 rounded-xl p-1 border-2"/>
+			<Bell class="size-9.5 rounded-xl p-1 border-2 border-black/15 bg-white"/>
 		</div>
 	</Popover.Trigger>
 	<Popover.Positioner class="z-1!">
-		<Popover.Content class="card w-96 p-4 bg-surface-100-900 shadow-xl">
+		<Popover.Content
+			class="card w-96 p-4 shadow-xl"
+			style="background:#ffffff;border:1px solid rgba(17,17,17,.12);color:#111111;"
+		>
 			<div class="space-y-4">
 				<header
 					class="grid grid-cols-[auto_1fr_auto] gap-4 items-center"
@@ -75,7 +78,7 @@
 						<X class="size-4" />
 					</Popover.CloseTrigger>
 				</header>
-				<hr class="hr border-t-4 border-primary-500" />
+				<hr class="hr border-t-2 border-black/15" />
 				{#each requests as senderId}
 					<div
 						class="grid grid-cols-[1fr_auto_auto] gap-4 items-center"
@@ -85,12 +88,12 @@
 							your friend
 						</div>
 						<div>
-							<button class="btn-icon preset-filled" onclick={() => actOnRequest(senderId, "accept")}
+							<button class="btn-icon action-btn" onclick={() => actOnRequest(senderId, "accept")}
 								><Check class="size-6" /></button
 							>
 						</div>
 						<div>
-							<button class="btn-icon preset-filled" onclick={() => actOnRequest(senderId, "reject")}
+							<button class="btn-icon action-btn" onclick={() => actOnRequest(senderId, "reject")}
 								><X class="size-6" /></button
 							>
 						</div>
@@ -111,25 +114,35 @@
 	@custom-variant dark (&:where([data-mode=dark], [data-mode=dark] *));
 
 	button {
-		border-radius: 20px;
+		border-radius: 10px;
 		margin-right: 5px;
 		margin-left: 5px;
-		padding: 0.8em 1em;
+		padding: 0.55em 0.85em;
 		font-size: 1em;
-		font-weight: 500;
+		font-weight: 600;
 		font-family: inherit;
 		cursor: pointer;
-		transition: border-color 0.25s;
-		@apply bg-black dark:bg-white;
-		@apply text-white dark:text-black;
+		transition: all 0.2s ease;
 	}
 	button:focus,
 	button:focus-visible {
 		outline: 4px auto -webkit-focus-ring-color;
 	}
 
+	.action-btn {
+		border: 1px solid #111111;
+		background: #111111;
+		color: #ffffff;
+	}
+
+	.action-btn:hover {
+		background: #ff8f1f;
+		border-color: #ff8f1f;
+		color: #111111;
+	}
+
 	.active {
-		animation: notified 1s infinite;
+		animation: notified 1.2s infinite;
 	}
 
 	@keyframes notified {
@@ -138,7 +151,7 @@
 		}
 
 		50% {
-			background-color: rgba(255, 0, 0, 0.5); 
+			background-color: rgba(255, 143, 31, 0.35); 
 		}
 
 		100% {

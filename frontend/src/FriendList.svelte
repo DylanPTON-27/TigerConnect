@@ -83,11 +83,11 @@
 <article class="flex items-center h-[15%]">
 	<div class="flex">
 		<input
-			class="input border rounded px-2 py-1 w-full"
+			class="friend-input px-2 py-1 w-full"
 			placeholder="NetID (e.g. ab1234)"
 			bind:value={receiverNetid}
 		/>
-		<button type="button" class="btn preset-filled" onclick={sendFriendRequest}>
+		<button type="button" class="add-btn" onclick={sendFriendRequest}>
 			Add
 		</button>
 	</div>
@@ -119,33 +119,56 @@
 	@custom-variant dark (&:where([data-mode=dark], [data-mode=dark] *));
 
 	.container {
-		@apply card card-hover divide-y;
+		@apply divide-y;
 		@apply h-[95%] w-[90%];
+		background: #ffffff;
+		border: 1px solid rgba(17, 17, 17, 0.12);
+		border-radius: 12px;
+		padding: 0.9rem;
 	}
 
 	button {
-		border-radius: 8px;
-		margin-right: 5px;
-		margin-left: 5px;
-		padding: 0.8em 1em;
+		border-radius: 10px;
+		margin-right: 0.4rem;
+		margin-left: 0.4rem;
+		padding: 0.55em 0.9em;
 		font-size: 1em;
-		font-weight: 500;
+		font-weight: 600;
 		font-family: inherit;
 		cursor: pointer;
-		transition: border-color 0.25s;
-		@apply bg-black dark:bg-white;
-		@apply text-white dark:text-black;
+		transition: all 0.2s ease;
 	}
 	button:focus,
 	button:focus-visible {
 		outline: 4px auto -webkit-focus-ring-color;
 	}
 
+	.friend-input {
+		border: 1px solid rgba(17, 17, 17, 0.18);
+		border-radius: 10px;
+		background: #ffffff;
+		color: #111111;
+	}
+
+	.add-btn {
+		border: 1px solid #111111;
+		background: #111111;
+		color: #ffffff;
+	}
+
+	.add-btn:hover {
+		background: #ff8f1f;
+		border-color: #ff8f1f;
+		color: #111111;
+	}
+
 	.names {
-		@apply mt-2 text-lg;
+		@apply mt-2 text-base;
 		@apply grid grid-cols-[1fr_auto] justify-items-start w-full;
 		@apply truncate;
 		@apply bg-transparent;
-		@apply text-black dark:text-white;
+		@apply text-black;
+		border: 1px solid rgba(17, 17, 17, 0.08);
+		padding: 0.5rem 0.7rem;
 	}
 </style>

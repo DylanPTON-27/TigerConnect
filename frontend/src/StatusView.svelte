@@ -136,7 +136,7 @@
           </Portal>
         </Tooltip>
 
-        <h1 class="ml-5 mr-auto">{uname}</h1>
+        <h1 class="ml-5 mr-auto text-2xl">{uname}</h1>
 
         <Switch
             {checked}
@@ -171,15 +171,18 @@
 
   .card {
     @apply m-1 h-full w-full;
+    border: 1px solid rgba(17, 17, 17, 0.12);
+    background: #ffffff;
+    border-radius: 12px;
   }
 
   .friendContainer {
-    @apply border rounded-lg;
     @apply flex justify-center items-center;
   }
 
   .stuffBox {
     @apply flex justify-center items-center;
     @apply p-5;
+    color: #2d2d2d;
   }
 </style>

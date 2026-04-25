@@ -9,6 +9,14 @@
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+  --tc-bg: #fffaf2;
+  --tc-surface: #ffffff;
+  --tc-border: rgba(17, 17, 17, 0.12);
+  --tc-text: #111111;
+  --tc-muted: #2d2d2d;
+  --tc-accent: #ff8f1f;
+  --tc-btn: #111111;
+  --tc-btn-text: #ffffff;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -22,6 +30,8 @@ body {
   min-height: 100vh;
   height: 100%;
   overflow: hidden;
+  background: var(--tc-bg);
+  color: var(--tc-text);
 }
 
 [data-mode="dark"], [data-mode="light"] {
@@ -87,10 +97,6 @@ a {
 }
 
 h1 {
-  @apply h1;
-}
-
-h1 {
   @apply h2;
 }
 
@@ -98,43 +104,23 @@ h3 {
   @apply h3;
 }
 
-.underglow {
-		position: relative;
-		border-radius: 8px;
-		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.01);
-    padding-left: 5%;
-    padding-right: 5%;
-    margin-left: 10%;
-    margin-right: 10%;
-	}
-
-.underglow::after {
-		position: absolute;
-		content: "";
-		top: 15%; left: -10%; right: 0; z-index: -1; height: 80%; width: 120%;
-		transform: scale(0.9) translateZ(0);
-    backdrop-filter: blur(15px);
-		filter: blur(15px);
-		background: linear-gradient(to left, #ff5770, #e4428d, #c42da8, #9e16c3, #6501de, #9e16c3, #c42da8, #e4428d,#ff5770);
-		background-size: 200% 200%;
-		-webkit-animation: animateGlow 5s linear infinite;
-		animation: animateGlow 5s linear infinite;
+.tc-surface {
+  background: var(--tc-surface);
+  border: 1px solid var(--tc-border);
+  border-radius: 12px;
 }
 
-	@-webkit-keyframes animateGlow {
-		0% {
-			background-position: 0% 50%;
-		}
-		100% {
-			background-position: 200% 50%;
-		}
-	}
+.tc-btn {
+  border: 1px solid var(--tc-btn);
+  background: var(--tc-btn);
+  color: var(--tc-btn-text);
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
 
-	@keyframes animateGlow {
-		0% {
-			background-position: 0% 50%;
-		}
-		100% {
-			background-position: 200% 50%;
-		}
-	}
+.tc-btn:hover {
+  background: var(--tc-accent);
+  border-color: var(--tc-accent);
+  color: var(--tc-text);
+}
