@@ -24,6 +24,17 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+[data-mode="dark"] {
+  --tc-bg: #151312;
+  --tc-surface: #1f1b1a;
+  --tc-border: rgba(255, 255, 255, 0.16);
+  --tc-text: #f3f0ed;
+  --tc-muted: #c9c2bc;
+  --tc-accent: #ff9f3f;
+  --tc-btn: #f3f0ed;
+  --tc-btn-text: #151312;
+}
+
 body {
   margin: 0;
   min-width: 320px;

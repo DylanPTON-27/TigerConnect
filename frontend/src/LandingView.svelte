@@ -45,28 +45,28 @@
   @import "tailwindcss";
 
   .landing-wrap {
-    background: #fffaf2;
+    background: var(--tc-bg);
   }
 
   .hero-card {
-    border: 1px solid rgba(17, 17, 17, 0.12);
-    background: #ffffff;
+    border: 1px solid var(--tc-border);
+    background: var(--tc-surface);
   }
 
   .hero-title {
-    color: #111111;
+    color: var(--tc-text);
     font-weight: 600;
   }
 
   .hero-subtitle {
-    color: #2d2d2d;
+    color: var(--tc-muted);
   }
 
   .cta-btn {
     border-radius: 10px;
-    border: 1px solid #111111;
-    background: #111111;
-    color: #ffffff;
+    border: 1px solid var(--tc-btn);
+    background: var(--tc-btn);
+    color: var(--tc-btn-text);
     font-size: 1rem;
     font-weight: 600;
     padding: 0.8rem 1.15rem;
@@ -74,8 +74,8 @@
   }
 
   .cta-btn:hover {
-    background: #ff8f1f;
-    border-color: #ff8f1f;
-    color: #111111;
+    background: var(--tc-accent);
+    border-color: var(--tc-accent);
+    color: var(--tc-text);
   }
 </style>

@@ -54,15 +54,15 @@
 	}
 
 	.logout-btn {
-		border: 1px solid #111111;
-		background: #111111;
-		color: #ffffff;
+		border: 1px solid var(--tc-btn);
+		background: var(--tc-btn);
+		color: var(--tc-btn-text);
 	}
 
 	.logout-btn:hover {
-		background: #ff8f1f;
-		border-color: #ff8f1f;
-		color: #111111;
+		background: var(--tc-accent);
+		border-color: var(--tc-accent);
+		color: var(--tc-text);
 	}
 
 	.brand-logo {

@@ -46,14 +46,14 @@
 		@apply rounded-xl;
 		@apply px-3;
 		@apply flex items-center justify-center;
-		background: #ffffff;
-		border-color: rgba(17, 17, 17, 0.12);
-		color: #111111;
+		background: var(--tc-surface);
+		border-color: var(--tc-border);
+		color: var(--tc-text);
 	}
 
 	:global(.indicators[data-current]) {
-		background: #ff8f1f;
-		border-color: #ff8f1f;
-		color: #111111;
+		background: var(--tc-accent);
+		border-color: var(--tc-accent);
+		color: var(--tc-text);
 	}
 </style>

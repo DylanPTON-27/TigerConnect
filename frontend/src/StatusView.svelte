@@ -171,9 +171,10 @@
 
   .card {
     @apply m-1 h-full w-full;
-    border: 1px solid rgba(17, 17, 17, 0.12);
-    background: #ffffff;
+    border: 1px solid var(--tc-border);
+    background: var(--tc-surface);
     border-radius: 12px;
+    color: var(--tc-text);
   }
 
   .friendContainer {
@@ -183,6 +184,6 @@
   .stuffBox {
     @apply flex justify-center items-center;
     @apply p-5;
-    color: #2d2d2d;
+    color: var(--tc-muted);
   }
 </style>

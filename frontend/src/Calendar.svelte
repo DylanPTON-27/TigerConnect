@@ -427,10 +427,11 @@
 		height: 68vh;
 		max-height: 90vh;
 		margin: auto;
-		border: 1px solid rgba(17, 17, 17, 0.12);
+		border: 1px solid var(--tc-border);
 		border-radius: 12px;
 		overflow: hidden;
-		background: #ffffff;
+		background: var(--tc-surface);
+		color: var(--tc-text);
 	}
 
 	.toggler {
@@ -441,9 +442,9 @@
 		align-items: center;
 		padding: 5px;
 		border-radius: 8px;
-		border: 1px solid rgba(17, 17, 17, 0.12);
-		background: #ffffff;
-		color: #111111;
+		border: 1px solid var(--tc-border);
+		background: var(--tc-surface);
+		color: var(--tc-text);
 	}
 
 	.toggler label {
@@ -452,9 +453,9 @@
 	}
 
 	.upload-btn {
-		border: 1px solid #111111;
-		background: #111111;
-		color: #ffffff;
+		border: 1px solid var(--tc-btn);
+		background: var(--tc-btn);
+		color: var(--tc-btn-text);
 		border-radius: 10px;
 		padding: 0.55rem 0.9rem;
 		font-weight: 600;
@@ -462,12 +463,12 @@
 	}
 
 	.upload-btn:hover {
-		background: #ff8f1f;
-		border-color: #ff8f1f;
-		color: #111111;
+		background: var(--tc-accent);
+		border-color: var(--tc-accent);
+		color: var(--tc-text);
 	}
 
 	.status-message {
-		color: #2d2d2d;
+		color: var(--tc-muted);
 	}
 </style>

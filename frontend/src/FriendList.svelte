@@ -121,10 +121,11 @@
 	.container {
 		@apply divide-y;
 		@apply h-[95%] w-[90%];
-		background: #ffffff;
-		border: 1px solid rgba(17, 17, 17, 0.12);
+		background: var(--tc-surface);
+		border: 1px solid var(--tc-border);
 		border-radius: 12px;
 		padding: 0.9rem;
+		color: var(--tc-text);
 	}
 
 	button {
@@ -144,22 +145,22 @@
 	}
 
 	.friend-input {
-		border: 1px solid rgba(17, 17, 17, 0.18);
+		border: 1px solid var(--tc-border);
 		border-radius: 10px;
-		background: #ffffff;
-		color: #111111;
+		background: var(--tc-surface);
+		color: var(--tc-text);
 	}
 
 	.add-btn {
-		border: 1px solid #111111;
-		background: #111111;
-		color: #ffffff;
+		border: 1px solid var(--tc-btn);
+		background: var(--tc-btn);
+		color: var(--tc-btn-text);
 	}
 
 	.add-btn:hover {
-		background: #ff8f1f;
-		border-color: #ff8f1f;
-		color: #111111;
+		background: var(--tc-accent);
+		border-color: var(--tc-accent);
+		color: var(--tc-text);
 	}
 
 	.names {
@@ -167,8 +168,8 @@
 		@apply grid grid-cols-[1fr_auto] justify-items-start w-full;
 		@apply truncate;
 		@apply bg-transparent;
-		@apply text-black;
-		border: 1px solid rgba(17, 17, 17, 0.08);
+		color: var(--tc-text);
+		border: 1px solid var(--tc-border);
 		padding: 0.5rem 0.7rem;
 	}
 </style>

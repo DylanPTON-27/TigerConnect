@@ -53,14 +53,14 @@
 <Popover>
 	<Popover.Trigger>
 		<div class={areNotifications ? 'rounded-xl active' : 'rounded-xl'}>
-			<Bell class="size-9.5 rounded-xl p-1 border-2 border-black/15 bg-white"/>
+			<Bell
+				class="size-9.5 rounded-xl p-1 border-2"
+				style="border-color:var(--tc-border);background:var(--tc-surface);color:var(--tc-text);"
+			/>
 		</div>
 	</Popover.Trigger>
 	<Popover.Positioner class="z-1!">
-		<Popover.Content
-			class="card w-96 p-4 shadow-xl"
-			style="background:#ffffff;border:1px solid rgba(17,17,17,.12);color:#111111;"
-		>
+		<Popover.Content class="notif-surface card w-96 p-4 shadow-xl">
 			<div class="space-y-4">
 				<header
 					class="grid grid-cols-[auto_1fr_auto] gap-4 items-center"
@@ -78,7 +78,7 @@
 						<X class="size-4" />
 					</Popover.CloseTrigger>
 				</header>
-				<hr class="hr border-t-2 border-black/15" />
+				<hr class="notif-divider hr border-t-2" />
 				{#each requests as senderId}
 					<div
 						class="grid grid-cols-[1fr_auto_auto] gap-4 items-center"
@@ -130,15 +130,25 @@
 	}
 
 	.action-btn {
-		border: 1px solid #111111;
-		background: #111111;
-		color: #ffffff;
+		border: 1px solid var(--tc-btn);
+		background: var(--tc-btn);
+		color: var(--tc-btn-text);
 	}
 
 	.action-btn:hover {
-		background: #ff8f1f;
-		border-color: #ff8f1f;
-		color: #111111;
+		background: var(--tc-accent);
+		border-color: var(--tc-accent);
+		color: var(--tc-text);
+	}
+
+	:global(.notif-surface) {
+		background: var(--tc-surface);
+		border: 1px solid var(--tc-border);
+		color: var(--tc-text);
+	}
+
+	.notif-divider {
+		border-color: var(--tc-border);
 	}
 
 	.active {
