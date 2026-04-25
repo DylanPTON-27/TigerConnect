@@ -19,7 +19,7 @@
 	<AppBar.Toolbar class="grid grid-cols-3 items-center">
 		<AppBar.Lead class="flex items-center">
 			<a href="/app.html">
-				<div class="Title underglow">TigerConnect</div>
+				<img class="brand-logo" src="/tigerconnect-logo.png" alt="TigerConnect" />
 			</a>
 		</AppBar.Lead>
 
@@ -55,13 +55,15 @@
 		outline: 4px auto -webkit-focus-ring-color;
 	}
 
-	.Title {
-		border-radius: 100px;
-		font-size: 2em;
-		font-weight: 200;
-		@apply text-white;
-		@apply w-max;
-		--tw-bg-opacity: 0.015;
-    	background-color: rgba(0,0,0,var(--tw-bg-opacity));
+	.brand-logo {
+		height: 3.1rem;
+		width: auto;
+		display: block;
+	}
+
+	@media (max-width: 640px) {
+		.brand-logo {
+			height: 2.4rem;
+		}
 	}
 </style>
