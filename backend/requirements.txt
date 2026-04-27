@@ -8,3 +8,4 @@ flask-cors
 psycopg2-binary
 python-dotenv
 sendgrid
+Pillow
