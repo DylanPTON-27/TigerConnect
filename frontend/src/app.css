@@ -115,6 +115,19 @@ h3 {
   @apply h3;
 }
 
+.img {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 100%;
+  aspect-ratio: 1/1;
+  border: solid 2px;
+  min-width: 3em;
+  background: var(--tc-bg);
+  border-color: white;
+  color: var(--tc-text);
+}
+
 .tc-surface {
   background: var(--tc-surface);
   border: 1px solid var(--tc-border);

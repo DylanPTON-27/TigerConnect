@@ -1,5 +1,4 @@
 <script>
-	// @ts-nocheck
 	import "temporal-polyfill/global";
 	import '@schedule-x/theme-default/dist/index.css'
 	import { ScheduleXCalendar } from "@schedule-x/svelte";

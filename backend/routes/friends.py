@@ -1,18 +1,25 @@
 from datetime import datetime, timedelta
-
+import io
+from PIL import Image
 from flask import Blueprint, jsonify, request, Response
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
-from .models import Activity, FriendRequest, Friendship, Users, db, Blocked, UserImage
+from .models import Activity, FriendRequest, Friendship, Users, db, Blocked, UserImage, Conversation
+import base64
+import requests
+import uuid
 import os 
 import sendgrid
 from sendgrid.helpers.mail import Mail
-import re
-
+import time
+import jwt
 
 
 friends_bp = Blueprint("friends", __name__)
+
+TALKJS_SECRET_KEY = os.environ.get('TALKJS_SECRET_KEY', 'change-pls')
+TALKJS_APP_ID = os.environ.get('TALKJS_APP_ID', 'foobar')
 
 
 def send_email(recipient, body):
@@ -36,12 +43,6 @@ def send_request():
     receiver = receiver.strip().lower()
     if not receiver:
         return {"error": "missing receiver"}, 400
-
-    # pattern = r'[A-Za-z]{2}[0-9]{4}'
-    # valid_netid = bool(re.fullmatch(pattern, sender))
-    # if not valid_netid:
-    #      return {"error": "not valid netid"}, 400
-
 
 
     if receiver == sender:
@@ -238,31 +239,43 @@ def get_friends_and_status():
     user_id = get_jwt_identity()
     now = datetime.now()
 
+    # Added UserImage to the query
     results = (
         db.session.query(
             Friendship.friend_id,
             Users.name,
             Activity.is_active,
-            Activity.expires_at
+            Activity.expires_at,
+            UserImage.data,
+            UserImage.mimetype
         )
         .join(Users, Friendship.friend_id == Users.netid)
         .outerjoin(Activity, Friendship.friend_id == Activity.user_id)
+        .outerjoin(UserImage, Friendship.friend_id == UserImage.user_id) # Join photos
         .filter(Friendship.user_id == user_id)
         .all()
     )
 
     friends_status = []
-    for friend_id, name, is_active, expires_at in results:
+    for friend_id, name, is_active, expires_at, img_data, mimetype in results:
         is_currently_active = (
             is_active is True and 
             expires_at is not None and 
             expires_at > now
         )
 
+        # Handle the image data conversion
+        photo_url = ""
+        if img_data:
+            # Convert binary to base64 string for JSON
+            encoded_img = base64.b64encode(img_data).decode('utf-8')
+            photo_url = f"data:{mimetype};base64,{encoded_img}"
+
         friends_status.append({
             "netid": friend_id,
             "name": name,
-            "status": "active" if is_currently_active else "offline"
+            "status": "active" if is_currently_active else "offline",
+            "photoUrl": photo_url
         })
 
     return jsonify(friends_status)
@@ -346,25 +359,39 @@ def update_photo():
     if photo is None:
         return jsonify({"error": "No Image Uploaded!"}), 400
 
+    try:
+        img = Image.open(photo)
+        
+        if img.mode in ("RGBA", "P"):
+            img = img.convert("RGB")
+
+        img.thumbnail((200, 200))
+
+        buffer = io.BytesIO()
+        img.save(buffer, format="JPEG", quality=85) 
+        shrunk_data = buffer.getvalue()
+        
+    except Exception as e:
+        return jsonify({"error": f"Failed to process image: {str(e)}"}), 400
+
     existing_image = UserImage.query.filter_by(user_id=user_id).first()
 
     if existing_image:
         existing_image.name = secure_filename(photo.filename)
-        existing_image.mimetype = photo.mimetype
-        existing_image.data = photo.read()
+        existing_image.mimetype = "image/jpeg"
+        existing_image.data = shrunk_data
         message = "Image updated successfully!"
     else:
         new_image = UserImage(
             user_id=user_id,
             name=secure_filename(photo.filename),
-            mimetype=photo.mimetype,
-            data=photo.read()
+            mimetype="image/jpeg",
+            data=shrunk_data
         )
         db.session.add(new_image)
         message = "New image created!"
 
     db.session.commit()
-    
     return jsonify({"message": message}), 200
     
 @friends_bp.route("/get_photo", methods=["POST"])
@@ -380,3 +407,89 @@ def get_photo():
         photo.data, 
         mimetype=photo.mimetype
     )
+
+
+
+@friends_bp.route('/get-talkjs-token', methods=["POST"])
+@jwt_required()
+def get_talkjs_token():
+    user_id = get_jwt_identity()
+
+    payload = {
+        "tokenType": "user",
+        "iss": TALKJS_APP_ID,
+        "sub": user_id,
+        "iat": int(time.time()), # Issued At
+        "exp": int(time.time()) + 24 * 3600 # Expires in 24 hours
+    }
+
+    try:
+        encoded_jwt = jwt.encode(payload, TALKJS_SECRET_KEY, algorithm="HS256")
+        
+        return jsonify({
+            "token": encoded_jwt,
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@friends_bp.route('/conversations', methods=["POST"])
+@jwt_required()
+def conversations():
+    current_user_id = get_jwt_identity()
+    
+    friendships = Friendship.query.filter((Friendship.user_id == current_user_id)).all()
+
+    friend_ids = [f.friend_id for f in friendships]
+
+    existing_convs = Conversation.query.filter(
+        (Conversation.user_one == current_user_id) | (Conversation.user_two == current_user_id)
+    ).all()
+
+    chat_map = {}
+    for conv in existing_convs:
+        other_party = conv.user_two if conv.user_one == current_user_id else conv.user_one
+        chat_map[other_party] = conv.id
+
+    results = {}
+    talkjs_url = f"https://api.talkjs.com/v1/{TALKJS_APP_ID}/conversations"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {TALKJS_SECRET_KEY}"
+    }
+
+    for f_id in friend_ids:
+        if f_id in chat_map:
+            results[f_id] = chat_map[f_id]
+        else:
+            new_uuid = str(uuid.uuid4())
+            
+            payload = {
+                "participants": [current_user_id, f_id],
+            }
+
+            try:
+                response = requests.put(
+                    f"{talkjs_url}/{new_uuid}",
+                    json=payload,
+                    headers=headers,
+                    timeout=5
+                )
+
+                if response.status_code == 200:
+                    new_entry = Conversation(
+                        id=new_uuid, 
+                        user_one=current_user_id, 
+                        user_two=f_id
+                    )
+                    db.session.add(new_entry)
+                    results[f_id] = new_uuid
+                else:
+                    results[f_id] = None
+                    
+            except Exception as e:
+                print(f"TalkJS Sync Error for {f_id}: {e}")
+                results[f_id] = None
+
+    db.session.commit()
+    return jsonify(results), 200

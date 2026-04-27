@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import uuid
 
 db = SQLAlchemy()
 
@@ -14,13 +15,23 @@ class FriendRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.String, db.ForeignKey("users.netid"), nullable=False)
     receiver_id = db.Column(db.String, db.ForeignKey("users.netid"), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
 
 # Friendship Status
 class Friendship(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.String, db.ForeignKey("users.netid"), nullable=False)
     friend_id = db.Column(db.String, db.ForeignKey("users.netid"), nullable=False)
+
+# Conversations
+class Conversation(db.Model):
+    # Store the UUID as the primary key
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4())) 
+    user_one = db.Column(db.String, db.ForeignKey("users.netid"), nullable=False)
+    user_two = db.Column(db.String, db.ForeignKey("users.netid"), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+
+    __table_args__ = (db.UniqueConstraint('user_one', 'user_two', name='unique_chat_pair'),)
 
 # Activity Status
 class Activity(db.Model):
@@ -52,7 +63,7 @@ class CalendarEvent(db.Model):
     start_utc = db.Column(db.DateTime, nullable=False, index=True)
     end_utc = db.Column(db.DateTime, nullable=False, index=True)
     timezone = db.Column(db.String(64))
-    updated_at = db.Column(db.DateTime, default=datetime.now())
+    updated_at = db.Column(db.DateTime, default=datetime.now)
 
     __table_args__ = (
         db.UniqueConstraint("user_id", "provider_event_id", name="uq_user_event"),
@@ -62,8 +73,9 @@ class CalendarEvent(db.Model):
 class AuthNonce(db.Model):
     nonce = db.Column(db.String(64), primary_key=True)
     username = db.Column(db.String, db.ForeignKey("users.netid"), nullable=False, index=True)
-    created_at = db.Column(db.DateTime, default=datetime.now(), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
 
+# Profile Pics
 class UserImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.String, db.ForeignKey("users.netid"), nullable=False)
@@ -71,6 +83,7 @@ class UserImage(db.Model):
     mimetype = db.Column(db.String(20), nullable=False)
     data = db.Column(db.LargeBinary, nullable=False)
 
+# Calendars
 class Calendar(db.Model):
     __tablename__ = 'calendars'
     id = db.Column(db.Integer, primary_key=True)

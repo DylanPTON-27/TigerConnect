@@ -2,6 +2,7 @@
 	import { onMount } from "svelte";
 	import { waitForToken } from './helpers.svelte';
 	import { Handshake } from "@lucide/svelte";
+	import { selectedFriend } from "./sharedVars.svelte.js";
 	import "./app.css";
 
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
@@ -63,10 +64,14 @@
 		void loadFriends();
 	}
 
+	function selectFriend(name, netid, photo) {
+		selectedFriend.changeFriend(name, netid, photo);
+	}
+
 	onMount(() => {
 		const f = async () => {
 			await waitForToken("accessToken");
-			void loadFriends();
+			await loadFriends();
 			window.addEventListener("friends:changed", handleFriendsChanged);
 			return () => window.removeEventListener("friends:changed", handleFriendsChanged);
 		};
@@ -97,7 +102,7 @@
 </article>
 <footer>
 	{#each friends as friend}
-		<button type="button" class="names">
+		<button type="button" class="names" onclick={() => selectFriend(friend.name, friend.netid, friend.photoUrl)}>
 			<div>
 				<span class="truncate">{friend.name}</span>
 			</div>

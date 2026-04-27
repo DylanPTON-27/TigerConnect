@@ -27,11 +27,14 @@
     "@schedule-x/theme-default": "^4.3.1",
     "@schedule-x/theme-shadcn": "^4.4.0",
     "@tailwindcss/vite": "^4.2.2",
+    "@talkjs/core": "^1.9.1",
+    "@talkjs/web-components": "^0.1.10",
     "ical.js": "^2.2.1",
     "lucide-svelte": "^1.0.1",
     "mode-watcher": "^0.5.1",
     "preact": "^10.29.1",
     "tailwindcss": "^4.2.2",
+    "talkjs": "^0.45.1",
     "temporal-polyfill": "0.3.0"
   }
 }

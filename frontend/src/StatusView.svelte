@@ -5,6 +5,7 @@
   import { Portal, Tooltip } from '@skeletonlabs/skeleton-svelte';
   import { waitForToken } from './helpers.svelte';
   import FriendList from "./FriendList.svelte";
+  import Chat from "./Chat.svelte";
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
   let checked = $state(false);
@@ -153,7 +154,7 @@
       <hr class="hr" />
 
       <div class="stuffBox">
-        Stuff
+        <Chat />
       </div>
     </div>
 
