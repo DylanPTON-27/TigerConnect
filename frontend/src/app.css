@@ -17,6 +17,7 @@
   --tc-accent: #ff8f1f;
   --tc-btn: #111111;
   --tc-btn-text: #ffffff;
+  --tc-bg-stable: #fffaf2;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -33,6 +34,7 @@
   --tc-accent: #ff9f3f;
   --tc-btn: #f3f0ed;
   --tc-btn-text: #151312;
+  --tc-bg-stable: #fffaf2;
 }
 
 body {

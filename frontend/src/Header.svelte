@@ -19,7 +19,7 @@
 	<AppBar.Toolbar class="grid grid-cols-3 items-center px-3 py-1">
 		<AppBar.Lead class="flex items-center">
 			<a href="/app.html">
-				<img class="brand-logo" src="/tigerconnect-logo.png" alt="TigerConnect" />
+				<img class="brand-logo" src="/tigerconnect-logo-long.svg" alt="TigerConnect" />
 			</a>
 		</AppBar.Lead>
 
@@ -66,8 +66,12 @@
 	}
 
 	.brand-logo {
-		height: 2.7rem;
-		width: auto;
+		border-radius: 10px;
+		border: 6px solid var(--tc-bg-stable);
+		object-fit: cover;
+    	height: 2.2rem;
+		width: auto; 
+		background: var(--tc-bg-stable);
 		display: block;
 	}
 
