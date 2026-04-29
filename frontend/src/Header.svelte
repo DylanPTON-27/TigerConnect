@@ -15,7 +15,7 @@
 	}
 </script>
 
-<AppBar class="justify-center h-auto w-full tc-surface">
+<AppBar class="justify-center h-auto w-full" style="background:var(--tc-bg)">
 	<AppBar.Toolbar class="grid grid-cols-3 items-center px-3 py-1">
 		<AppBar.Lead class="flex items-center">
 			<a href="/app.html">
@@ -69,8 +69,8 @@
 		border-radius: 10px;
 		border: 6px solid var(--tc-bg-stable);
 		object-fit: cover;
-    	height: 2.2rem;
-		width: auto; 
+    	height: auto;
+		width: 20rem; 
 		background: var(--tc-bg-stable);
 		display: block;
 	}
