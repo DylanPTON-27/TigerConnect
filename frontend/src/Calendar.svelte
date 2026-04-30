@@ -356,6 +356,7 @@
 		} else {
 		visibleGroups = [...visibleGroups, id];
 		}
+		visibleGroups = visibleGroups.filter(item => item !== undefined);
 	}
 
 	onMount(() => {
