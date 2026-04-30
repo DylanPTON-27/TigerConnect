@@ -1,21 +1,50 @@
-<script>
+<script lang='ts'>
 	import { onMount } from "svelte";
 	import { waitForToken } from './helpers.svelte';
 	import { Handshake } from "@lucide/svelte";
 	import { selectedFriend } from "./sharedVars.svelte.js";
+	import { Combobox, Portal, type ComboboxRootProps, useListCollection } from '@skeletonlabs/skeleton-svelte';
 	import "./app.css";
 
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 	let friends = $state([]);
 	let receiverNetid = $state("");
 	let requestMessage = $state("");
+	let data = $state([]);
+	let items = $state([]);
+
+	const collection = $derived(
+		useListCollection({
+			items: items,
+			itemToString: (item) => item.label,
+			itemToValue: (item) => item.value,
+		}),
+	);
+
+	const onOpenChange = () => {
+		items = data;
+	};
+
+	const onSelect = (event) => {
+		receiverNetid = event.itemValue;
+	}
+
+	const onInputValueChange: ComboboxRootProps['onInputValueChange'] = (event) => {
+		console.log(data);
+		const filtered = data.filter((item) => item.value.toLowerCase().includes(event.inputValue.toLowerCase()));
+		if (filtered.length > 0) {
+			items = filtered;
+		} else {
+			items = data;
+		}
+	};
 
 	async function loadFriends() {
 		friends = [];
 		const token = sessionStorage.getItem("accessToken");
 		if (!token) return;
 
-		const res = await fetch(`${API_BASE}/friends/get_friends_and_status`, {
+		const res = await fetch(`${API_BASE}/friends/get_all_friends`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -24,7 +53,9 @@
 			body: JSON.stringify({}),
 		});
 		if (res.ok) {
-			const friendsJSON = await res.json();
+			const returnedJSON = await res.json();
+			const friendsJSON = returnedJSON.friends;
+			data = returnedJSON.all_users;
 			for (const row of friendsJSON) {
 				friends.push(row);
 			}
@@ -86,12 +117,26 @@
 	Friends List
 </header>
 <article class="flex items-center h-[15%]">
-	<div class="flex">
-		<input
-			class="friend-input px-2 py-1 w-full"
-			placeholder="NetID (e.g. ab1234)"
-			bind:value={receiverNetid}
-		/>
+	<div class="flex h-[50%] w-full">
+		<Combobox class="px-2 w-full" placeholder="Search People..." {collection} {onOpenChange} {onInputValueChange} {onSelect} inputBehavior="autohighlight" >
+			<Combobox.Control>
+				<Combobox.Input class="h-[5vh] rounded-[10px]" />
+				<Combobox.Trigger />
+			</Combobox.Control>
+			<Portal>
+				<Combobox.Positioner>
+					<Combobox.Content>
+						{#each items as item (item.value)}
+							<Combobox.Item {item}>
+								<Combobox.ItemText>{item.label}</Combobox.ItemText>
+								<Combobox.ItemIndicator />
+							</Combobox.Item>
+						{/each}
+					</Combobox.Content>
+				</Combobox.Positioner>
+			</Portal>
+		</Combobox>
+
 		<button type="button" class="add-btn" onclick={sendFriendRequest}>
 			Add
 		</button>
@@ -149,17 +194,11 @@
 		outline: 4px auto -webkit-focus-ring-color;
 	}
 
-	.friend-input {
-		border: 1px solid var(--tc-border);
-		border-radius: 10px;
-		background: var(--tc-surface);
-		color: var(--tc-text);
-	}
-
 	.add-btn {
 		border: 1px solid var(--tc-btn);
 		background: var(--tc-btn);
 		color: var(--tc-btn-text);
+		height: 5vh;
 	}
 
 	.add-btn:hover {

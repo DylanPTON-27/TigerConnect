@@ -82,19 +82,36 @@ def notifications():
     sender_ids = [row[0] for row in all_sender_ids]
     return jsonify(sender_ids)
 
-
-@friends_bp.route("/get_all_friends", methods=["POST"])
-@jwt_required()
-def get_all_friends_route():
-    return jsonify(
-        get_all_friends(get_jwt_identity())
-    )
-
-
 def get_all_friends(user_id):
     all_friends_ids = db.session.query(Friendship.friend_id).filter_by(user_id=user_id).all()
     all_friends_ids = [row[0] for row in all_friends_ids]
     return all_friends_ids
+
+@friends_bp.route("/get_all_friends", methods=["POST"])
+@jwt_required()
+def get_directory_data():
+    user_id = get_jwt_identity()
+
+    friend_data = (
+        db.session.query(Users.netid, Users.name)
+        .join(Friendship, Friendship.friend_id == Users.netid)
+        .filter(Friendship.user_id == user_id)
+        .all()
+    )
+
+    all_friends = [{"netid": row.netid, "name": row.name} for row in friend_data]
+
+    all_user_rows = db.session.query(Users.netid, Users.name).all()
+    
+    all_users_list = [
+        {"value": row.netid, "label": row.name} 
+        for row in all_user_rows
+    ]
+
+    return jsonify({
+        "friends": all_friends,
+        "all_users": all_users_list
+    })
 
 
 @friends_bp.route("/accept", methods=["POST"])

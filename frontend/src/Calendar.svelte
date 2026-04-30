@@ -16,7 +16,6 @@
 	import { waitForToken } from './helpers.svelte';
 
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
-	let statusMessage = $state("");
 	let calendarRenderKey = $state(0);
 	const date = new Date();
 	date.setHours(date.getHours() - 4);
@@ -301,7 +300,6 @@
 				body: JSON.stringify({}),
 			});
 			if (!res.ok) {
-				statusMessage = "No uploaded .ics yet.";
 				return;
 			}
 			const icsText = await res.text();
@@ -315,10 +313,8 @@
 				plugins: [createCurrentTimePlugin(), scrollController, eventsService],
 			});
 			calendarRenderKey += 1;
-			statusMessage = `Loaded ${allEvents.length} events from latest upload.`;
 		} catch (err) {
 			console.error(err);
-			statusMessage = `Failed to load calendar: ${err?.message || err}`;
 		}
 	}
 
@@ -337,10 +333,9 @@
 			body: formData,
 		});
 		if (!res.ok) {
-			statusMessage = "No uploaded .ics yet.";
 			return;
 		}
-		statusMessage = "Upload succeeded. Reloading events...";
+		
 		await loadLatestCalendar();
 	}
 
@@ -390,9 +385,6 @@
 		Upload .ics
 		<input type="file" accept=".ics,text/calendar" class="hidden" onchange={onFileChange} />
 	</label>
-	{#if statusMessage}
-		<span class="text-sm status-message">{statusMessage}</span>
-	{/if}
 </div>
 
 {#key calendarRenderKey}
@@ -465,9 +457,5 @@
 		background: var(--tc-accent);
 		border-color: var(--tc-accent);
 		color: var(--tc-text);
-	}
-
-	.status-message {
-		color: var(--tc-muted);
 	}
 </style>
