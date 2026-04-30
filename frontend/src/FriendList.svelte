@@ -1,7 +1,8 @@
 <script lang='ts'>
 	import { onMount } from "svelte";
 	import { waitForToken } from './helpers.svelte';
-	import { Handshake, Send, Ban } from "@lucide/svelte";
+	import { Popover} from "@skeletonlabs/skeleton-svelte";
+	import { Handshake, EllipsisVertical, Send, Ban } from "@lucide/svelte";
 	import { selectedFriend } from "./sharedVars.svelte.js";
 	import { Combobox, Portal, type ComboboxRootProps, useListCollection } from '@skeletonlabs/skeleton-svelte';
 	import { ChevronDownIcon } from '@lucide/svelte';
@@ -41,7 +42,20 @@
 	};
 
 	async function loadFriends() {
-		friends = [];
+		friends = [
+			// {
+            // "netid": "dc4986",
+            // "name": "Dylan Conard",
+            // "status": "active",
+            // "photoUrl": ""
+			// },
+			// {
+            // "netid": "cs-TigerConnect",
+            // "name": "TigerConnect",
+            // "status": "active",
+            // "photoUrl": ""
+			// }
+		];
 		const token = sessionStorage.getItem("accessToken");
 		if (!token) return;
 
@@ -89,6 +103,93 @@
 		} else {
 			const err = await res.json().catch(() => ({}));
 			requestMessage = err.error || "Failed to send request.";
+		}
+	}
+
+	async function removeFriend() {
+		const receiver = receiverNetid.trim().toLowerCase();
+		if (!receiver) return;
+
+		const token = sessionStorage.getItem("accessToken");
+		if (!token) {
+			requestMessage = "Missing auth token.";
+			return;
+		}
+
+		const res = await fetch(`${API_BASE}/friends/remove`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify({ receiver }),
+		});
+
+		if (res.ok) {
+			requestMessage = "Friend removed.";
+			receiverNetid = "";
+			await loadFriends();
+		} else {
+			const err = await res.json().catch(() => ({}));
+			requestMessage = err.error || "Failed to remove friend.";
+		}
+	}
+
+	async function blockFriend() {
+		const receiver = receiverNetid.trim().toLowerCase();
+		if (!receiver) return;
+
+		const token = sessionStorage.getItem("accessToken");
+		if (!token) {
+			requestMessage = "Missing auth token.";
+			return;
+		}
+
+		const res = await fetch(`${API_BASE}/friends/block`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify({ receiver }),
+		});
+
+		if (res.ok) {
+			requestMessage = "Friend blocked.";
+			receiverNetid = "";
+			await loadFriends();
+		} else {
+			const err = await res.json().catch(() => ({}));
+			requestMessage = err.error || "Failed to block friend.";
+		}
+	}
+
+	async function unblockFriend() {
+		const receiver = receiverNetid.trim().toLowerCase();
+		if (!receiver) return;
+
+		const token = sessionStorage.getItem("accessToken");
+		if (!token) {
+			requestMessage = "Missing auth token.";
+			return;
+		}
+
+		const res = await fetch(`${API_BASE}/friends/unblock`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify({ receiver }),
+		});
+
+		if (res.ok) {
+			requestMessage = "Friend blocked.";
+			receiverNetid = "";
+			await loadFriends();
+		} else {
+			const err = await res.json().catch(() => ({}));
+			requestMessage = err.error || "Failed to block friend.";
 		}
 	}
 
@@ -295,13 +396,23 @@
 	}
 
 	.names {
-		@apply mt-2 text-base;
+		@apply mt-1 mb-1 text-base;
 		@apply grid grid-cols-[1fr_auto] justify-items-start w-full;
 		@apply truncate;
 		@apply bg-transparent;
 		color: var(--tc-text);
 		border: 1px solid var(--tc-border);
 		padding: 0.5rem 0.7rem;
+	}
+
+	.remove-btn {
+		@apply mt-1 mb-1 text-base;
+		@apply justify-items-center;
+		@apply bg-transparent;
+		width: 9rem;
+		color: var(--tc-text);
+		border: 2px solid var(--tc-border);
+		padding: 0.2rem 0rem;
 	}
 
 	footer {

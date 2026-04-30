@@ -423,6 +423,8 @@
 		overflow: hidden;
 		background: var(--tc-surface);
 		color: var(--tc-text);
+		position: relative;
+		z-index: 500;
 	}
 
 	.toggler {

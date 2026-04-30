@@ -103,7 +103,7 @@
     >
     </t-chatbox>
 {:else}
-    <div class="loading-state">
+    <div class="loading-state justify-items-center pt-5">
         {#if !userId}
             <p>Waiting for login...</p>
         {:else}
