@@ -42,12 +42,18 @@
 
 	async function loadFriends() {
 		friends = [
-			// {
-            // "netid": "dc4986",
-            // "name": "Dylan Conard",
-            // "status": "active",
-            // "photoUrl": ""
-			// }
+			{
+            "netid": "dc4986",
+            "name": "Dylan Conard",
+            "status": "active",
+            "photoUrl": ""
+			},
+			{
+            "netid": "cs-TigerConnect",
+            "name": "TigerConnect",
+            "status": "active",
+            "photoUrl": ""
+			}
 		];
 		const token = sessionStorage.getItem("accessToken");
 		if (!token) return;
@@ -99,7 +105,7 @@
 		}
 	}
 
-	async function removeFriendRequest() {
+	async function removeFriend() {
 		const receiver = receiverNetid.trim().toLowerCase();
 		if (!receiver) return;
 
@@ -125,6 +131,64 @@
 		} else {
 			const err = await res.json().catch(() => ({}));
 			requestMessage = err.error || "Failed to remove friend.";
+		}
+	}
+
+	async function blockFriend() {
+		const receiver = receiverNetid.trim().toLowerCase();
+		if (!receiver) return;
+
+		const token = sessionStorage.getItem("accessToken");
+		if (!token) {
+			requestMessage = "Missing auth token.";
+			return;
+		}
+
+		const res = await fetch(`${API_BASE}/friends/block`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify({ receiver }),
+		});
+
+		if (res.ok) {
+			requestMessage = "Friend blocked.";
+			receiverNetid = "";
+			await loadFriends();
+		} else {
+			const err = await res.json().catch(() => ({}));
+			requestMessage = err.error || "Failed to block friend.";
+		}
+	}
+
+	async function unblockFriend() {
+		const receiver = receiverNetid.trim().toLowerCase();
+		if (!receiver) return;
+
+		const token = sessionStorage.getItem("accessToken");
+		if (!token) {
+			requestMessage = "Missing auth token.";
+			return;
+		}
+
+		const res = await fetch(`${API_BASE}/friends/unblock`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify({ receiver }),
+		});
+
+		if (res.ok) {
+			requestMessage = "Friend blocked.";
+			receiverNetid = "";
+			await loadFriends();
+		} else {
+			const err = await res.json().catch(() => ({}));
+			requestMessage = err.error || "Failed to block friend.";
 		}
 	}
 
@@ -222,7 +286,7 @@
 														</header>
 														<button class="remove-btn" style="width:5rem;" onclick={() => {
 														receiverNetid = friend.netid;
-														removeFriendRequest();}}>
+														removeFriend();}}>
 															Yes
 														</button>
 														<Popover.CloseTrigger class="mt-1 mb-1 text-base justify-items-center bg-transparent" 
@@ -251,7 +315,9 @@
 														<header>
 															Are you sure?
 														</header>
-														<button class="remove-btn" style="width:5rem;" onclick={() => actOnRequest(senderId, "accept")}>
+														<button class="remove-btn" style="width:5rem;" onclick={() => {
+														receiverNetid = friend.netid;
+														blockFriend();}}>
 															Yes
 														</button>
 														<Popover.CloseTrigger class="mt-1 mb-1 text-base justify-items-center bg-transparent" 

@@ -96,9 +96,9 @@
 	});
 </script>
 
-<div class="h-[8vh] flex items-center px-4 pt-3 z-400! relative">
+<div class="h-[8vh] flex items-center px-4 pt-3">
 	<Header />
 </div>
-<div class="h-[92vh] flex items-center px-4 pb-4 z-350! relative">
+<div class="h-[92vh] flex items-center px-4 pb-4">
 	<Main />
 </div>

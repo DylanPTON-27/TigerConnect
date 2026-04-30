@@ -1,11 +1,12 @@
 <script>
 	import { onMount } from "svelte";
-	import { Popover } from "@skeletonlabs/skeleton-svelte";
+	import { Popover, Portal } from "@skeletonlabs/skeleton-svelte";
 	import { Bell, X, Check } from "@lucide/svelte";
 	import { waitForToken } from './helpers.svelte';
 
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 	let requests = $state([]);
+	let receiverNetid = $state("");
 	let areNotifications = $state(false);
 
 	async function fetchNotifications () {
@@ -48,6 +49,36 @@
 			areNotifications = requests.length > 0;
 		}
 	}
+
+	async function blockFriend() {
+		const receiver = receiverNetid.trim().toLowerCase();
+		if (!receiver) return;
+
+		const token = sessionStorage.getItem("accessToken");
+		if (!token) {
+			requestMessage = "Missing auth token.";
+			return;
+		}
+
+		const res = await fetch(`${API_BASE}/friends/block`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify({ receiver }),
+		});
+
+		if (res.ok) {
+			receiverNetid = "";
+			requests = requests.filter((r) => (Array.isArray(r) ? r[0] : r) !== (Array.isArray(receiver) ? receiver[0] : receiver));
+			window.dispatchEvent(new Event("friends:changed"));
+			areNotifications = requests.length > 0;
+		} else {
+			const err = await res.json().catch(() => ({}));
+			requestMessage = err.error || "Failed to block user.";
+		}
+	}
 </script>
 
 <Popover>
@@ -80,12 +111,54 @@
 				</header>
 				<hr class="notif-divider hr border-t-2" />
 				{#each requests as senderId}
-					<div
-						class="grid grid-cols-[1fr_auto_auto] gap-4 items-center"
-					>
+					<div class="grid grid-cols-[1fr_auto_auto] gap-4 items-center">
 						<div>
-							<span class="underline">{Array.isArray(senderId) ? senderId[0] : senderId}</span> wants to be
-							your friend
+							<Popover positioning={{ placement: 'left' }}>
+								<Popover.Trigger>
+									<div class="underline text-left">{Array.isArray(senderId) ? senderId[0] : senderId}</div> wants to be
+									your friend
+								</Popover.Trigger>
+								<Portal>
+									<Popover.Positioner class="grid grid-cols-[auto] z-1000! relative">
+										<Popover.Content class="card notif-surface max-w-md p-1.5 shadow-xl justify-items-center">
+											<div>
+												<Popover>
+													<Popover.Trigger>
+														<button class="remove-btn">
+															Block Friend
+														</button>
+													</Popover.Trigger>
+													<Portal>
+														<Popover.Positioner>
+															<Popover.Content class="card notif-surface max-w-md p-1.5 shadow-xl justify-items-center">
+																	<header>
+																		Are you sure?
+																	</header>
+																	<button class="remove-btn" style="width:5rem;" onclick={() => {
+																	receiverNetid = senderId;
+																	blockFriend();}}>
+																		Yes
+																	</button>
+																	<Popover.CloseTrigger class="mt-1 mb-1 text-base justify-items-center bg-transparent" 
+																	style="width:9rem;color:var(--tc-text);border:2px solid var(--tc-border);padding: 0.2rem 0rem;border-radius:10px;width:5rem;">
+																		No
+																	</Popover.CloseTrigger>
+																<Popover.Arrow class="[--arrow-size:--spacing(2)] [--arrow-background:var(--color-surface-100-900)]">
+																	<Popover.ArrowTip />
+																</Popover.Arrow>
+															</Popover.Content>
+														</Popover.Positioner>
+													</Portal>
+												</Popover>
+											</div>
+
+											<Popover.Arrow class="[--arrow-size:--spacing(2)] [--arrow-background:var(--color-surface-100-900)]">
+												<Popover.ArrowTip />
+											</Popover.Arrow>
+										</Popover.Content>
+									</Popover.Positioner>
+								</Portal>
+							</Popover>
 						</div>
 						<div>
 							<button class="btn-icon action-btn" onclick={() => actOnRequest(senderId, "accept")}
@@ -167,5 +240,15 @@
 		100% {
 			background-color: rgba(255, 0, 0, 0); 
 		}
+	}
+	
+	.remove-btn {
+		@apply mt-1 mb-1 text-base;
+		@apply justify-items-center;
+		@apply bg-transparent;
+		width: 9rem;
+		color: var(--tc-text);
+		border: 2px solid var(--tc-border);
+		padding: 0.2rem 0rem;
 	}
 </style>
