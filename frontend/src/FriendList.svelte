@@ -1,7 +1,7 @@
 <script lang='ts'>
 	import { onMount } from "svelte";
 	import { waitForToken } from './helpers.svelte';
-	import { Popover, Portal} from "@skeletonlabs/skeleton-svelte";
+	import { Popover} from "@skeletonlabs/skeleton-svelte";
 	import { Handshake, EllipsisVertical } from "@lucide/svelte";
 	import { selectedFriend } from "./sharedVars.svelte.js";
 	import { Combobox, Portal, type ComboboxRootProps, useListCollection } from '@skeletonlabs/skeleton-svelte';
@@ -174,7 +174,7 @@
 			</Portal>
 		</Combobox>
 
-		<button type="button" class="add-btn" onclick={sendFriendRequest}>
+		<button type="button" class="add-btn flex items-center" onclick={sendFriendRequest}>
 			Add
 		</button>
 	</div>
