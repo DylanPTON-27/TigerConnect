@@ -16,6 +16,8 @@
 	let requestMessage = $state("");
 	let data = $state([]);
 	let items = $state([]);
+	let blocked = $state([]);
+	let sentRequests = $state([]);
 
 	const collection = $derived(
 		useListCollection({
@@ -42,24 +44,11 @@
 	};
 
 	async function loadFriends() {
-		friends = [
-			// {
-            // "netid": "dc4986",
-            // "name": "Dylan Conard",
-            // "status": "active",
-            // "photoUrl": ""
-			// },
-			// {
-            // "netid": "cs-TigerConnect",
-            // "name": "TigerConnect",
-            // "status": "active",
-            // "photoUrl": ""
-			// }
-		];
+		friends = [];
 		const token = sessionStorage.getItem("accessToken");
 		if (!token) return;
 
-		const res = await fetch(`${API_BASE}/friends/get_all_friends`, {
+		const res = await fetch(`${API_BASE}/friends/get_everything`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -69,11 +58,10 @@
 		});
 		if (res.ok) {
 			const returnedJSON = await res.json();
-			const friendsJSON = returnedJSON.friends;
+			friends = returnedJSON.friends;
 			data = returnedJSON.all_users;
-			for (const row of friendsJSON) {
-				friends.push(row);
-			}
+			blocked = returnedJSON.blocked;
+			sentRequests = returnedJSON.sent_requests;
 		}
 	}
 
@@ -193,6 +181,35 @@
 		}
 	}
 
+	async function withdrawRequest() {
+		const receiver = receiverNetid.trim().toLowerCase();
+		if (!receiver) return;
+
+		const token = sessionStorage.getItem("accessToken");
+		if (!token) {
+			requestMessage = "Missing auth token.";
+			return;
+		}
+
+		const res = await fetch(`${API_BASE}/friends/withdraw_request`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify({ receiver }),
+		});
+
+		if (res.ok) {
+			requestMessage = "Friend request withdrawn.";
+			receiverNetid = "";
+			await loadFriends();
+		} else {
+			const err = await res.json().catch(() => ({}));
+			requestMessage = err.error || "Failed to withdraw friend request.";
+		}
+	}
+
 	function handleFriendsChanged() {
 		void loadFriends();
 	}
@@ -265,16 +282,99 @@
 				</article>
 				<footer>
 					{#each friends as friend}
-						<button type="button" class="names" onclick={() => selectFriend(friend.name, friend.netid, friend.photoUrl)}>
-							<div class="truncate max-w-[75%]">{friend.name}</div>
-							<div>
-								{#if friend.status === 'offline'}
-									<span class="ml-auto shrink-0 text-red-600">Busy</span>
-								{:else}
-									<span class="ml-auto shrink-0 text-green-600">Free</span>
-								{/if}
+						<div class="grid grid-cols-[1fr_auto] gap-1 items-center">
+							<button type="button" class="names" onclick={() => selectFriend(friend.name, friend.netid, friend.photoUrl)}>
+								<div class="truncate max-w-[75%]">{friend.name}</div>
+								<div>
+									{#if friend.status === 'offline'}
+										<span class="ml-auto shrink-0 text-red-600">Busy</span>
+									{:else}
+										<span class="ml-auto shrink-0 text-green-600">Free</span>
+									{/if}
+								</div>
+							</button>
+							
+							<div class="justify-self-center">
+								<Popover>
+									<Popover.Trigger>
+										<button class="btn-icon action-btn">
+											<EllipsisVertical class="size-6" />
+										</button>
+									</Popover.Trigger>
+									<Portal>
+										<Popover.Positioner class="grid grid-cols-[auto]">
+											<Popover.Content class="card notif-surface max-w-md p-1.5 shadow-xl justify-items-center">
+												<div>
+													<Popover positioning={{ placement: 'left' }}>
+														<Popover.Trigger>
+															<button class="remove-btn">
+																Remove Friend
+															</button>
+														</Popover.Trigger>
+														<Portal>
+															<Popover.Positioner>
+																<Popover.Content class="card notif-surface max-w-md p-1.5 shadow-xl justify-items-center">
+																		<header>
+																			Are you sure?
+																		</header>
+																		<button class="remove-btn" style="width:5rem;" onclick={() => {
+																		receiverNetid = friend.netid;
+																		removeFriend();}}>
+																			Yes
+																		</button>
+																		<Popover.CloseTrigger class="mt-1 mb-1 text-base justify-items-center bg-transparent" 
+																		style="width:9rem;color:var(--tc-text);border:2px solid var(--tc-border);padding: 0.2rem 0rem;border-radius:10px;width:5rem;">
+																			No
+																		</Popover.CloseTrigger>
+																	<Popover.Arrow class="[--arrow-size:--spacing(2)] [--arrow-background:var(--color-surface-100-900)]">
+																		<Popover.ArrowTip />
+																	</Popover.Arrow>
+																</Popover.Content>
+															</Popover.Positioner>
+														</Portal>
+													</Popover>
+												</div>
+
+												<div>
+													<Popover positioning={{ placement: 'left' }}>
+														<Popover.Trigger>
+															<button class="remove-btn">
+																Block Friend
+															</button>
+														</Popover.Trigger>
+														<Portal>
+															<Popover.Positioner>
+																<Popover.Content class="card notif-surface max-w-md p-1.5 shadow-xl justify-items-center">
+																		<header>
+																			Are you sure?
+																		</header>
+																		<button class="remove-btn" style="width:5rem;" onclick={() => {
+																		receiverNetid = friend.netid;
+																		blockFriend();}}>
+																			Yes
+																		</button>
+																		<Popover.CloseTrigger class="mt-1 mb-1 text-base justify-items-center bg-transparent" 
+																		style="width:9rem;color:var(--tc-text);border:2px solid var(--tc-border);padding: 0.2rem 0rem;border-radius:10px;width:5rem;">
+																			No
+																		</Popover.CloseTrigger>
+																	<Popover.Arrow class="[--arrow-size:--spacing(2)] [--arrow-background:var(--color-surface-100-900)]">
+																		<Popover.ArrowTip />
+																	</Popover.Arrow>
+																</Popover.Content>
+															</Popover.Positioner>
+														</Portal>
+													</Popover>
+												</div>
+
+												<Popover.Arrow class="[--arrow-size:--spacing(2)] [--arrow-background:var(--color-surface-100-900)]">
+													<Popover.ArrowTip />
+												</Popover.Arrow>
+											</Popover.Content>
+										</Popover.Positioner>
+									</Portal>
+								</Popover>
 							</div>
-						</button>
+						</div>
 					{/each}
 				</footer>
 			</div>
@@ -299,7 +399,65 @@
 			{#snippet element(attributes)}
 			{#if !attributes.hidden}
 			<div transition:slide={{ duration: 150 }} class="mb-5">
-				
+				<footer>
+					{#each sentRequests as sent}
+						<div class="grid grid-cols-[1fr_auto] gap-1 items-center">
+							<button type="button" class="names">
+								<div class="truncate max-w-[75%]">{sent.name}</div>
+							</button>
+							
+							<div class="justify-self-center">
+								<Popover>
+									<Popover.Trigger>
+										<button class="btn-icon action-btn">
+											<EllipsisVertical class="size-6" />
+										</button>
+									</Popover.Trigger>
+									<Portal>
+										<Popover.Positioner class="grid grid-cols-[auto]">
+											<Popover.Content class="card notif-surface max-w-md p-1.5 shadow-xl justify-items-center">
+												<div>
+													<Popover positioning={{ placement: 'left' }}>
+														<Popover.Trigger>
+															<button class="remove-btn">
+																Withdraw Friend Request
+															</button>
+														</Popover.Trigger>
+														<Portal>
+															<Popover.Positioner>
+																<Popover.Content class="card notif-surface max-w-md p-1.5 shadow-xl justify-items-center">
+																		<header>
+																			Are you sure?
+																		</header>
+																		<button class="remove-btn" style="width:5rem;" onclick={() => {
+																		receiverNetid = sent.netid;
+																		withdrawRequest();}}>
+																			Yes
+																		</button>
+																		<Popover.CloseTrigger class="mt-1 mb-1 text-base justify-items-center bg-transparent" 
+																		style="width:9rem;color:var(--tc-text);border:2px solid var(--tc-border);padding: 0.2rem 0rem;border-radius:10px;width:5rem;">
+																			No
+																		</Popover.CloseTrigger>
+																	<Popover.Arrow class="[--arrow-size:--spacing(2)] [--arrow-background:var(--color-surface-100-900)]">
+																		<Popover.ArrowTip />
+																	</Popover.Arrow>
+																</Popover.Content>
+															</Popover.Positioner>
+														</Portal>
+													</Popover>
+												</div>
+
+												<Popover.Arrow class="[--arrow-size:--spacing(2)] [--arrow-background:var(--color-surface-100-900)]">
+													<Popover.ArrowTip />
+												</Popover.Arrow>
+											</Popover.Content>
+										</Popover.Positioner>
+									</Portal>
+								</Popover>
+							</div>
+						</div>
+					{/each}
+				</footer>
 			</div>
 			{/if}
 			{/snippet}
@@ -322,7 +480,65 @@
 			{#snippet element(attributes)}
 			{#if !attributes.hidden}
 			<div transition:slide={{ duration: 150 }} class="mb-5">
-				
+				<footer>
+					{#each blocked as blocked_user}
+						<div class="grid grid-cols-[1fr_auto] gap-1 items-center">
+							<button type="button" class="names">
+								<div class="truncate max-w-[75%]">{blocked_user.name}</div>
+							</button>
+							
+							<div class="justify-self-center">
+								<Popover>
+									<Popover.Trigger>
+										<button class="btn-icon action-btn">
+											<EllipsisVertical class="size-6" />
+										</button>
+									</Popover.Trigger>
+									<Portal>
+										<Popover.Positioner class="grid grid-cols-[auto]">
+											<Popover.Content class="card notif-surface max-w-md p-1.5 shadow-xl justify-items-center">
+												<div>
+													<Popover positioning={{ placement: 'left' }}>
+														<Popover.Trigger>
+															<button class="remove-btn">
+																Unblock User
+															</button>
+														</Popover.Trigger>
+														<Portal>
+															<Popover.Positioner>
+																<Popover.Content class="card notif-surface max-w-md p-1.5 shadow-xl justify-items-center">
+																		<header>
+																			Are you sure?
+																		</header>
+																		<button class="remove-btn" style="width:5rem;" onclick={() => {
+																		receiverNetid = blocked_user.netid;
+																		unblockFriend();}}>
+																			Yes
+																		</button>
+																		<Popover.CloseTrigger class="mt-1 mb-1 text-base justify-items-center bg-transparent" 
+																		style="width:9rem;color:var(--tc-text);border:2px solid var(--tc-border);padding: 0.2rem 0rem;border-radius:10px;width:5rem;">
+																			No
+																		</Popover.CloseTrigger>
+																	<Popover.Arrow class="[--arrow-size:--spacing(2)] [--arrow-background:var(--color-surface-100-900)]">
+																		<Popover.ArrowTip />
+																	</Popover.Arrow>
+																</Popover.Content>
+															</Popover.Positioner>
+														</Portal>
+													</Popover>
+												</div>
+
+												<Popover.Arrow class="[--arrow-size:--spacing(2)] [--arrow-background:var(--color-surface-100-900)]">
+													<Popover.ArrowTip />
+												</Popover.Arrow>
+											</Popover.Content>
+										</Popover.Positioner>
+									</Portal>
+								</Popover>
+							</div>
+						</div>
+					{/each}
+				</footer>
 			</div>
 			{/if}
 			{/snippet}

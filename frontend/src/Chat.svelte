@@ -6,7 +6,6 @@
     import { onMount } from 'svelte';
     import { waitForToken } from './helpers.svelte';
     import { html } from '@talkjs/web-components';
-    import { Avatar } from '@skeletonlabs/skeleton-svelte';
 
     const appId = 'tnJk8fmq';
     const API_BASE = import.meta.env.VITE_API_BASE_URL || "";

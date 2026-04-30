@@ -86,14 +86,21 @@ def send_request():
     # send_email(f"{receiver}@princeton.edu",f"{sender} sent you a friend request")
     return {"message": "request sent"}, 200
 
-
 @friends_bp.route("/notifications", methods=["POST"])
 @jwt_required()
 def notifications():
     receiver = get_jwt_identity()
-    all_sender_ids = db.session.query(FriendRequest.sender_id).filter_by(receiver_id=receiver).all()
-    sender_ids = [row[0] for row in all_sender_ids]
-    return jsonify(sender_ids)
+    senders = (
+        db.session.query(FriendRequest.sender_id, Users.name)
+        .join(Users, FriendRequest.sender_id == Users.netid)
+        .filter(FriendRequest.receiver_id == receiver)
+        .all()
+    )
+    sender_list = [
+        {"netid": sender_id, "name": name}
+        for sender_id, name in senders
+    ]
+    return jsonify(sender_list)
 
 def get_all_friends(user_id):
     all_friends_ids = db.session.query(Friendship.friend_id).filter_by(user_id=user_id).all()
@@ -236,13 +243,12 @@ def remove():
     return {"message": "friendship removed"}
 
     
-@friends_bp.route("/get_all_friends", methods=["POST"])
+@friends_bp.route("/get_everything", methods=["POST"])
 @jwt_required()
-def get_friends_and_status():
+def get_everything():
     user_id = get_jwt_identity()
     now = datetime.now()
 
-    # Added UserImage to the query
     results = (
         db.session.query(
             Friendship.friend_id,
@@ -288,9 +294,33 @@ def get_friends_and_status():
         for row in all_user_rows
     ]
 
+    blocked_rows = (
+        db.session.query(Blocked.friend_id, Users.name)
+        .join(Users, Blocked.friend_id == Users.netid)
+        .filter(Blocked.user_id == user_id)
+        .all()
+    )
+    blocked_list = [
+        {"netid": friend_id, "name": name}
+        for friend_id, name in blocked_rows
+    ]
+
+    sent_requests = (
+        db.session.query(FriendRequest.receiver_id, Users.name)
+        .join(Users, FriendRequest.receiver_id == Users.netid)
+        .filter(FriendRequest.sender_id == user_id)
+        .all()
+    )
+    sent_list = [
+        {"netid": receiver_id, "name": name}
+        for receiver_id, name in sent_requests
+    ]
+
     return jsonify({
         "friends": friends_status,
-        "all_users": all_users_list
+        "all_users": all_users_list,
+        "blocked": blocked_list,
+        "sent_requests": sent_list,
     })
 
 @friends_bp.route("/get_status", methods=["POST"])
@@ -363,6 +393,24 @@ def unblock():
     db.session.commit()
     return {"message": "friend unblocked"}
 
+@friends_bp.route("/withdraw_request", methods=["POST"])
+@jwt_required()
+def withdraw_request():
+    user_id = get_jwt_identity()
+    data = request.get_json(silent=True) or {}
+    receiver = data.get("receiver")
+
+    if not receiver:
+        return {"error": "missing receiver"}, 400
+
+    request_to_delete = FriendRequest.query.filter_by(sender_id=user_id, receiver_id=receiver).first()
+    if not request_to_delete:
+        return {"error": "friend request not found"}, 404
+
+    db.session.delete(request_to_delete)
+    db.session.commit()
+    return {"message": "friend request withdrawn"}
+
 @friends_bp.route("/update_photo", methods=["POST"])
 @jwt_required()
 def update_photo():
@@ -421,8 +469,6 @@ def get_photo():
         mimetype=photo.mimetype
     )
 
-
-
 @friends_bp.route('/get-talkjs-token', methods=["POST"])
 @jwt_required()
 def get_talkjs_token():
@@ -465,23 +511,37 @@ def conversations():
         chat_map[other_party] = conv.id
 
     results = {}
-    talkjs_url = f"https://api.talkjs.com/v1/{TALKJS_APP_ID}/conversations"
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {TALKJS_SECRET_KEY}"
-    }
 
     for f_id in friend_ids:
         if f_id in chat_map:
             results[f_id] = chat_map[f_id]
         else:
             new_uuid = str(uuid.uuid4())
-            
-            payload = {
-                "participants": [current_user_id, f_id],
-            }
-
             try:
+                talkjs_url = f"https://api.talkjs.com/v1/{TALKJS_APP_ID}/users/{f_id}"
+                headers = {
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {TALKJS_SECRET_KEY}"
+                }
+                payload = {
+                    "name": f_id,
+                    "role": "default",
+                }
+                response = requests.put(
+                    talkjs_url,
+                    json=payload,
+                    headers=headers,
+                    timeout=5
+                )
+
+                talkjs_url = f"https://api.talkjs.com/v1/{TALKJS_APP_ID}/conversations"
+                headers = {
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {TALKJS_SECRET_KEY}"
+                }
+                payload = {
+                    "participants": [current_user_id, f_id],
+                }
                 response = requests.put(
                     f"{talkjs_url}/{new_uuid}",
                     json=payload,

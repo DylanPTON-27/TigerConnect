@@ -44,7 +44,7 @@
 			body: JSON.stringify({ sender: Array.isArray(sender) ? sender[0] : sender }),
 		});
 		if (res.ok) {
-			requests = requests.filter((r) => (Array.isArray(r) ? r[0] : r) !== (Array.isArray(sender) ? sender[0] : sender));
+			requests = requests.filter(r => r.netid !== sender);
 			window.dispatchEvent(new Event("friends:changed"));
 			areNotifications = requests.length > 0;
 		}
@@ -86,7 +86,7 @@
 		<div class={areNotifications ? 'rounded-xl active' : 'rounded-xl'}>
 			<Bell
 				class="size-9.5 rounded-xl p-1 border-2"
-				style="border-color:var(--tc-border);background:var(--tc-text);color:var(--tc-surface);"
+				style="border-color:var(--tc-text); color:var(--tc-text);"
 			/>
 		</div>
 	</Popover.Trigger>
@@ -110,13 +110,17 @@
 					</Popover.CloseTrigger>
 				</header>
 				<hr class="notif-divider hr border-t-2" />
-				{#each requests as senderId}
+				{#each requests as request}
 					<div class="grid grid-cols-[1fr_auto_auto] gap-4 items-center">
 						<div>
 							<Popover positioning={{ placement: 'left' }}>
 								<Popover.Trigger>
-									<div class="underline text-left">{Array.isArray(senderId) ? senderId[0] : senderId}</div> wants to be
-									your friend
+									<div class="text-left">
+										<div class="truncate max-w-50">{request.name}</div>
+										<span class="underline text-left text-gray-500">({request.netid})</span>
+										<br/>
+										wants to be your friend
+									</div>
 								</Popover.Trigger>
 								<Portal>
 									<Popover.Positioner class="grid grid-cols-[auto] z-1000! relative">
@@ -135,7 +139,7 @@
 																		Are you sure?
 																	</header>
 																	<button class="remove-btn" style="width:5rem;" onclick={() => {
-																	receiverNetid = senderId;
+																	receiverNetid = request.netid;
 																	blockFriend();}}>
 																		Yes
 																	</button>
@@ -161,12 +165,12 @@
 							</Popover>
 						</div>
 						<div>
-							<button class="btn-icon action-btn" onclick={() => actOnRequest(senderId, "accept")}
+							<button class="btn-icon action-btn" onclick={() => actOnRequest(request.netid, "accept")}
 								><Check class="size-6" /></button
 							>
 						</div>
 						<div>
-							<button class="btn-icon action-btn" onclick={() => actOnRequest(senderId, "reject")}
+							<button class="btn-icon action-btn" onclick={() => actOnRequest(request.netid, "reject")}
 								><X class="size-6" /></button
 							>
 						</div>

@@ -41,6 +41,8 @@ def _display_name_from_cas(userinfo: dict, username: str) -> str:
                 if first and last:
                     return f"{first} {last}"
             return value
+    if username[0] == ' ':
+        username = username[1:]
     return username
 
 
