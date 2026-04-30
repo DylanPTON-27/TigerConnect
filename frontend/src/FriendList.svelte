@@ -42,18 +42,18 @@
 
 	async function loadFriends() {
 		friends = [
-			{
-            "netid": "dc4986",
-            "name": "Dylan Conard",
-            "status": "active",
-            "photoUrl": ""
-			},
-			{
-            "netid": "cs-TigerConnect",
-            "name": "TigerConnect",
-            "status": "active",
-            "photoUrl": ""
-			}
+			// {
+            // "netid": "dc4986",
+            // "name": "Dylan Conard",
+            // "status": "active",
+            // "photoUrl": ""
+			// },
+			// {
+            // "netid": "cs-TigerConnect",
+            // "name": "TigerConnect",
+            // "status": "active",
+            // "photoUrl": ""
+			// }
 		];
 		const token = sessionStorage.getItem("accessToken");
 		if (!token) return;
