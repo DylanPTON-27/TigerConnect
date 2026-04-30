@@ -8,7 +8,7 @@
 		createViewWeek,
 		createViewMonthGrid,
 	} from "@schedule-x/calendar";
-	import { themeState } from "./sharedVars.svelte.js";
+	import { themeState, usersDict } from "./sharedVars.svelte.js";
 	import { createCurrentTimePlugin } from "@schedule-x/current-time";
 	import { createScrollControllerPlugin } from '@schedule-x/scroll-controller'
 	import { createEventsServicePlugin } from '@schedule-x/events-service';
@@ -358,6 +358,16 @@
 		}
 	}
 
+	function getName(id) {
+		for (const el of usersDict.users) {
+			if (el.value === id) {
+				return el.label;
+			}
+		}
+
+		return "";
+	}
+
 	onMount(() => {
 		const f = async () => {
 			await waitForToken("accessToken"); 
@@ -396,7 +406,7 @@
 		{#if id !== "undefined"}
 			<div class="toggler">
 				<label class="toggle-item" for={id}>
-					{id}
+					{getName(id)}
 				</label>
 				<input 
 					id={id}

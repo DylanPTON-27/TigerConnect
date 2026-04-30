@@ -2,7 +2,7 @@
     import '@talkjs/web-components/default.css';
     import '@talkjs/web-components';
     import { getTalkSession } from '@talkjs/core';
-    import { selectedFriend } from "./sharedVars.svelte.js";
+    import { selectedFriend, reloadConvos } from "./sharedVars.svelte.js";
     import { onMount } from 'svelte';
     import { waitForToken } from './helpers.svelte';
     import { html } from '@talkjs/web-components';
@@ -89,6 +89,17 @@
     $effect(() => {
         changeImage(selectedFriend);
         getConvo(selectedFriend);
+    });
+
+    $effect(() => {
+        reloadConvos.change;
+        const f = async () => {
+            await waitForToken("accessToken");
+            const token = await getToken();
+            startUp(token);
+        };
+
+        f();
     });
 </script>
 

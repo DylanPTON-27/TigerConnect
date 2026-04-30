@@ -15,3 +15,17 @@ export let selectedFriend = $state({
     this.photo = photo;
   }
 });
+
+export let reloadConvos = $state({
+  change: false,
+  toggle() {
+    this.change = !this.change;
+  }
+});
+
+export let usersDict = $state({
+  users: [],
+  setUsers(users) {
+    this.users = users;
+  }
+});

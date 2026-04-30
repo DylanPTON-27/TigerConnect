@@ -3,6 +3,7 @@
 	import { Popover, Portal } from "@skeletonlabs/skeleton-svelte";
 	import { Bell, X, Check } from "@lucide/svelte";
 	import { waitForToken } from './helpers.svelte';
+	import { reloadConvos } from "./sharedVars.svelte.js";
 
 	const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 	let requests = $state([]);
@@ -47,6 +48,7 @@
 			requests = requests.filter(r => r.netid !== sender);
 			window.dispatchEvent(new Event("friends:changed"));
 			areNotifications = requests.length > 0;
+			reloadConvos.toggle();
 		}
 	}
 

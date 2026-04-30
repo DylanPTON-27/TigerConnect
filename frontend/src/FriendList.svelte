@@ -3,7 +3,7 @@
 	import { waitForToken } from './helpers.svelte';
 	import { Popover} from "@skeletonlabs/skeleton-svelte";
 	import { Handshake, EllipsisVertical, Send, Ban } from "@lucide/svelte";
-	import { selectedFriend } from "./sharedVars.svelte.js";
+	import { selectedFriend, usersDict } from "./sharedVars.svelte.js";
 	import { Combobox, Portal, type ComboboxRootProps, useListCollection } from '@skeletonlabs/skeleton-svelte';
 	import { ChevronDownIcon } from '@lucide/svelte';
 	import { Accordion } from '@skeletonlabs/skeleton-svelte';
@@ -44,7 +44,6 @@
 	};
 
 	async function loadFriends() {
-		friends = [];
 		const token = sessionStorage.getItem("accessToken");
 		if (!token) return;
 
@@ -60,6 +59,7 @@
 			const returnedJSON = await res.json();
 			friends = returnedJSON.friends;
 			data = returnedJSON.all_users;
+			usersDict.setUsers(data);
 			blocked = returnedJSON.blocked;
 			sentRequests = returnedJSON.sent_requests;
 		}
@@ -227,6 +227,11 @@
 		};
 
 		f();
+	});
+
+	$effect(() => {
+		friends = [];
+		loadFriends();
 	});
 </script>
 
