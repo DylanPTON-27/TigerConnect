@@ -241,7 +241,6 @@
 		else {
 			userEventDict[username] = [event];
 		}
-		userEventDict = userEventDict.filter(item => item !== undefined);
 	}
 
 	function parseIcsToScheduleXEvents(icsText) {
@@ -394,18 +393,20 @@
 
 <div class="h-[5vh] flex justify-center items-center">
 	{#each Object.keys(colorDict) as id}
-		<div class="toggler">
-			<label class="toggle-item" for={id}>
-				{id}
-			</label>
-			<input 
-				id={id}
-				class="checkbox"
-				type="checkbox" 
-				checked={visibleGroups.includes(id)} 
-				onchange={() => toggleGroup(id)} 
-			/>
-		</div>
+		{#if id !== "undefined"}
+			<div class="toggler">
+				<label class="toggle-item" for={id}>
+					{id}
+				</label>
+				<input 
+					id={id}
+					class="checkbox"
+					type="checkbox" 
+					checked={visibleGroups.includes(id)} 
+					onchange={() => toggleGroup(id)} 
+				/>
+			</div>
+		{/if}
 	{/each}
 </div>
 
