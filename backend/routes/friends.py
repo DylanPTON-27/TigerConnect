@@ -62,7 +62,7 @@ def send_request():
     blocked = Blocked.query.filter_by(user_id=sender, friend_id=receiver).first()
     blocked2 = Blocked.query.filter_by(user_id=receiver, friend_id=sender).first()
     if blocked:
-        return {"message": "Unblock the person you want to friend first"}, 200
+        db.session.delete(blocked)
     if blocked2:
         return {"error": "Try again later!"}, 400
 
