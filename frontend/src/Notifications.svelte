@@ -59,7 +59,7 @@
 			/>
 		</div>
 	</Popover.Trigger>
-	<Popover.Positioner class="z-1!">
+	<Popover.Positioner class="z-1000! relative">
 		<Popover.Content class="notif-surface card w-96 p-4 shadow-xl">
 			<div class="space-y-4">
 				<header

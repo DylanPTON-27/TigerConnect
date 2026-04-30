@@ -1,7 +1,8 @@
 <script>
 	import { onMount } from "svelte";
 	import { waitForToken } from './helpers.svelte';
-	import { Handshake } from "@lucide/svelte";
+	import { Popover, Portal} from "@skeletonlabs/skeleton-svelte";
+	import { Handshake, EllipsisVertical } from "@lucide/svelte";
 	import { selectedFriend } from "./sharedVars.svelte.js";
 	import "./app.css";
 
@@ -11,7 +12,14 @@
 	let requestMessage = $state("");
 
 	async function loadFriends() {
-		friends = [];
+		friends = [
+			// {
+            // "netid": "dc4986",
+            // "name": "Dylan Conard",
+            // "status": "active",
+            // "photoUrl": ""
+			// }
+		];
 		const token = sessionStorage.getItem("accessToken");
 		if (!token) return;
 
@@ -60,6 +68,35 @@
 		}
 	}
 
+	async function removeFriendRequest() {
+		const receiver = receiverNetid.trim().toLowerCase();
+		if (!receiver) return;
+
+		const token = sessionStorage.getItem("accessToken");
+		if (!token) {
+			requestMessage = "Missing auth token.";
+			return;
+		}
+
+		const res = await fetch(`${API_BASE}/friends/remove`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify({ receiver }),
+		});
+
+		if (res.ok) {
+			requestMessage = "Friend removed.";
+			receiverNetid = "";
+			await loadFriends();
+		} else {
+			const err = await res.json().catch(() => ({}));
+			requestMessage = err.error || "Failed to remove friend.";
+		}
+	}
+
 	function handleFriendsChanged() {
 		void loadFriends();
 	}
@@ -102,18 +139,98 @@
 </article>
 <footer>
 	{#each friends as friend}
-		<button type="button" class="names" onclick={() => selectFriend(friend.name, friend.netid, friend.photoUrl)}>
-			<div>
-				<span class="truncate">{friend.name}</span>
+		<div class="grid grid-cols-[1fr_auto] gap-1 items-center">
+			<button type="button" class="names" onclick={() => selectFriend(friend.name, friend.netid, friend.photoUrl)}>
+				<div>
+					<span class="truncate">{friend.name}</span>
+				</div>
+				<div>
+					{#if friend.status === 'offline'}
+						<span class="ml-auto shrink-0 text-red-600">Busy</span>
+					{:else}
+						<span class="ml-auto shrink-0 text-green-600">Free</span>
+					{/if}
+				</div>
+			</button>
+			<div class="justify-self-center">
+				<Popover>
+					<Popover.Trigger>
+						<button class="btn-icon action-btn">
+							<EllipsisVertical class="size-6" />
+						</button>
+					</Popover.Trigger>
+					<Portal>
+						<Popover.Positioner class=grid grid-cols-[auto]>
+							<Popover.Content class="card notif-surface max-w-md p-1.5 shadow-xl justify-items-center">
+								<div>
+									<Popover positioning={{ placement: 'left' }}>
+										<Popover.Trigger>
+											<button class="remove-btn">
+												Remove Friend
+											</button>
+										</Popover.Trigger>
+										<Portal>
+											<Popover.Positioner>
+												<Popover.Content class="card notif-surface max-w-md p-1.5 shadow-xl justify-items-center">
+														<header>
+															Are you sure?
+														</header>
+														<button class="remove-btn" style="width:5rem;" onclick={() => {
+														receiverNetid = friend.netid;
+														removeFriendRequest();}}>
+															Yes
+														</button>
+														<Popover.CloseTrigger class="mt-1 mb-1 text-base justify-items-center bg-transparent" 
+														style="width:9rem;color:var(--tc-text);border:2px solid var(--tc-border);padding: 0.2rem 0rem;border-radius:10px;width:5rem;">
+															No
+														</Popover.CloseTrigger>
+													<Popover.Arrow class="[--arrow-size:--spacing(2)] [--arrow-background:var(--color-surface-100-900)]">
+														<Popover.ArrowTip />
+													</Popover.Arrow>
+												</Popover.Content>
+											</Popover.Positioner>
+										</Portal>
+									</Popover>
+								</div>
+
+								<div>
+									<Popover positioning={{ placement: 'left' }}>
+										<Popover.Trigger>
+											<button class="remove-btn">
+												Block Friend
+											</button>
+										</Popover.Trigger>
+										<Portal>
+											<Popover.Positioner>
+												<Popover.Content class="card notif-surface max-w-md p-1.5 shadow-xl justify-items-center">
+														<header>
+															Are you sure?
+														</header>
+														<button class="remove-btn" style="width:5rem;" onclick={() => actOnRequest(senderId, "accept")}>
+															Yes
+														</button>
+														<Popover.CloseTrigger class="mt-1 mb-1 text-base justify-items-center bg-transparent" 
+														style="width:9rem;color:var(--tc-text);border:2px solid var(--tc-border);padding: 0.2rem 0rem;border-radius:10px;width:5rem;">
+															No
+														</Popover.CloseTrigger>
+													<Popover.Arrow class="[--arrow-size:--spacing(2)] [--arrow-background:var(--color-surface-100-900)]">
+														<Popover.ArrowTip />
+													</Popover.Arrow>
+												</Popover.Content>
+											</Popover.Positioner>
+										</Portal>
+									</Popover>
+								</div>
+
+								<Popover.Arrow class="[--arrow-size:--spacing(2)] [--arrow-background:var(--color-surface-100-900)]">
+									<Popover.ArrowTip />
+								</Popover.Arrow>
+							</Popover.Content>
+						</Popover.Positioner>
+					</Portal>
+				</Popover>
 			</div>
-			<div>
-				{#if friend.status === 'offline'}
-					<span class="ml-auto shrink-0 text-red-600">Busy</span>
-				{:else}
-					<span class="ml-auto shrink-0 text-green-600">Free</span>
-				{/if}
-			</div>
-		</button>
+		</div>
 	{/each}
 </footer>
 </div>
@@ -169,12 +286,22 @@
 	}
 
 	.names {
-		@apply mt-2 text-base;
+		@apply mt-1 mb-1 text-base;
 		@apply grid grid-cols-[1fr_auto] justify-items-start w-full;
 		@apply truncate;
 		@apply bg-transparent;
 		color: var(--tc-text);
 		border: 1px solid var(--tc-border);
 		padding: 0.5rem 0.7rem;
+	}
+
+	.remove-btn {
+		@apply mt-1 mb-1 text-base;
+		@apply justify-items-center;
+		@apply bg-transparent;
+		width: 9rem;
+		color: var(--tc-text);
+		border: 2px solid var(--tc-border);
+		padding: 0.2rem 0rem;
 	}
 </style>
