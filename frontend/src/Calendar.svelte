@@ -241,6 +241,7 @@
 		else {
 			userEventDict[username] = [event];
 		}
+		userEventDict = userEventDict.filter(item => item !== undefined);
 	}
 
 	function parseIcsToScheduleXEvents(icsText) {
@@ -356,7 +357,6 @@
 		} else {
 		visibleGroups = [...visibleGroups, id];
 		}
-		visibleGroups = visibleGroups.filter(item => item !== undefined);
 	}
 
 	onMount(() => {
