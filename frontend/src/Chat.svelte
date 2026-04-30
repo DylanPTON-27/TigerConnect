@@ -73,6 +73,10 @@
         return photo;
     }
 
+    function Empty() {
+        return "";
+    }
+
     onMount(() => {
         const f = async () => {
             await waitForToken("accessToken");
@@ -95,7 +99,7 @@
         app-id={appId}
         user-id={userId}
         conversation-id={conversationId}
-        theme = {{Avatar: Image}}
+        theme = {{ConversationImage: Image, Avatar: Empty}}
     >
     </t-chatbox>
 {:else}

@@ -104,8 +104,8 @@
 </script>
 
 <div class="h-full w-[95%]">
-  <div class="grid grid-flow-col grid-rows-1 gap-4 h-[95%] m-auto">
-    <div class="col-span-1 card">
+  <div class="grid grid-cols-3 grid-rows-1 gap-4 h-[95%] m-auto">
+    <div class="col-span-2 card row-span-full">
       <div class="w-full flex items-center p-5">
         <Tooltip positioning={{ placement: 'top' }}>
           <Tooltip.Trigger>
@@ -153,14 +153,14 @@
 
       <hr class="hr" />
 
-      <div class="stuffBox">
+      <div class="chatContainer">
         <Chat />
       </div>
     </div>
 
     
 
-    <div class="row-span-full card friendContainer">
+    <div class="col-span-1 row-span-full card friendContainer">
       <FriendList />
     </div>
   </div>
@@ -182,7 +182,7 @@
     @apply flex justify-center items-center;
   }
 
-  .stuffBox {
+  .chatContainer {
     @apply flex justify-center items-center;
     @apply p-5;
     color: var(--tc-muted);
