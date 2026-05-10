@@ -131,7 +131,7 @@
 												<Popover>
 													<Popover.Trigger>
 														<button class="remove-btn">
-															Block Friend
+															Block User
 														</button>
 													</Popover.Trigger>
 													<Portal>
