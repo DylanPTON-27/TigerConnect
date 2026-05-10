@@ -132,23 +132,8 @@ def login():
     try:
         db.session.commit()
     except IntegrityError:
-        # Production safety fallback: if nonce FK constraints are out of sync,
-        # continue login by redirecting with short-lived tokens instead of nonce handoff.
         db.session.rollback()
-        try:
-            _ensure_user(username, real_name)
-            db.session.commit()
-        except IntegrityError:
-            db.session.rollback()
-        access_token = flask_jwt_extended.create_access_token(identity=username)
-        refresh_token = flask_jwt_extended.create_refresh_token(identity=username)
-        query = urllib.parse.urlencode({
-            "username": username,
-            "accessToken": access_token,
-            "refreshToken": refresh_token,
-            "displayName": real_name,
-        })
-        return flask.redirect(f"{FRONTEND_URL}?{query}")
+        return flask.jsonify({"error": "failed to initialize login session"}), 500
 
     return flask.redirect(f"{FRONTEND_URL}?nonce={nonce}")
 
