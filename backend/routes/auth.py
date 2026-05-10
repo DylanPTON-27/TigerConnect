@@ -40,7 +40,7 @@ def _display_name_from_cas(userinfo: dict, username: str) -> str:
                 last, first = [part.strip() for part in value.split(",", 1)]
                 if first and last:
                     return f"{first} {last}"
-            return value
+            return value.rstrip(", ").strip()
     if username[0] == ' ':
         username = username[1:]
     return username
@@ -50,7 +50,7 @@ def _ensure_user(username: str, display_name: str | None = None) -> Users:
     user = Users.query.filter_by(netid=username).first()
     if user:
         changed = False
-        if display_name and not user.name:
+        if display_name and user.name != display_name:
             user.name = display_name
             changed = True
         if not user.email:
