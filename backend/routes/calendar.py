@@ -229,13 +229,45 @@ def build_busy_blocks(events, window_start, window_end, minutes=30):
                 b["busy"] = True
     return blocks
 
+
+def _authorized_calendar_users(current_user: str, requested_users: list[str]) -> tuple[list[str], str | None]:
+    if not isinstance(requested_users, list) or not requested_users:
+        return [], "missing or invalid users list"
+
+    # Allow only self + established friends.
+    allowed = set(get_all_friends(current_user))
+    allowed.add(current_user)
+
+    normalized = []
+    for raw in requested_users:
+        if not isinstance(raw, str):
+            return [], "users must contain only strings"
+        user = raw.strip().lower()
+        if not user:
+            continue
+        normalized.append(user)
+
+    if not normalized:
+        return [], "no valid users requested"
+
+    unauthorized = [u for u in normalized if u not in allowed]
+    if unauthorized:
+        return [], f"unauthorized user ids requested: {', '.join(sorted(set(unauthorized)))}"
+
+    # De-duplicate while preserving caller order.
+    unique_users = list(dict.fromkeys(normalized))
+    return unique_users, None
+
 @calendar_bp.route("/overlay", methods=["POST"])
 @jwt_required()
 def overlay():
-    data = request.json
-    users = data["users"]  # list of netids
+    current_user = get_jwt_identity()
+    data = request.get_json(silent=True) or {}
+    users, err = _authorized_calendar_users(current_user, data.get("users"))
+    if err:
+        return {"error": err}, 400
+
     window_days = data.get("days", 7)
-    minutes = data.get("minutes", 30)
 
     now = datetime.now()
     window_start = now.replace(minute=0, second=0, microsecond=0)
@@ -260,8 +292,12 @@ def overlay():
 @calendar_bp.route("/suggest", methods=["POST"])
 @jwt_required()
 def suggest():
-    data = request.json
-    users = data["users"]
+    current_user = get_jwt_identity()
+    data = request.get_json(silent=True) or {}
+    users, err = _authorized_calendar_users(current_user, data.get("users"))
+    if err:
+        return {"error": err}, 400
+
     window_days = data.get("days", 7)
     minutes = data.get("minutes", 30)
 
