@@ -2,9 +2,10 @@ import os
 import requests
 from datetime import datetime, timedelta, timezone
 from flask import Blueprint, request, jsonify, redirect, make_response
-from .models import db, CalendarAccount, CalendarEvent, Calendar
+from .models import db, CalendarAccount, CalendarEvent, Calendar, OAuthState
 from flask_jwt_extended import get_jwt_identity, jwt_required, get_jwt
 from .friends import get_all_friends
+import secrets
 
 calendar_bp = Blueprint("calendar", __name__)
 
@@ -17,6 +18,7 @@ GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_CAL_EVENTS = "https://www.googleapis.com/calendar/v3/calendars/primary/events"
 
 SCOPES = "https://www.googleapis.com/auth/calendar.readonly"
+OAUTH_STATE_TTL = timedelta(minutes=10)
 
 
 def _google_oauth_config_error():
@@ -49,6 +51,10 @@ def auth_start():
         return config_error
 
     user = get_jwt_identity()
+    state = secrets.token_hex(32)
+    db.session.add(OAuthState(state=state, username=user))
+    db.session.commit()
+
     params = {
         "client_id": GOOGLE_CLIENT_ID,
         "redirect_uri": GOOGLE_REDIRECT_URI,
@@ -56,7 +62,7 @@ def auth_start():
         "scope": SCOPES,
         "access_type": "offline",
         "prompt": "consent",
-        "state": user,
+        "state": state,
     }
     q = "&".join([f"{k}={requests.utils.quote(str(v))}" for k, v in params.items()])
     return redirect(f"{GOOGLE_AUTH_URL}?{q}")
@@ -68,9 +74,22 @@ def auth_callback():
         return config_error
 
     code = request.args.get("code")
-    user = request.args.get("state")
-    if not code or not user:
+    state = request.args.get("state")
+    if not code or not state:
         return {"error": "missing code/state"}, 400
+
+    row = OAuthState.query.filter_by(state=state).first()
+    if not row:
+        return {"error": "invalid state"}, 400
+
+    if row.created_at < datetime.now() - OAUTH_STATE_TTL:
+        db.session.delete(row)
+        db.session.commit()
+        return {"error": "expired state"}, 400
+
+    user = row.username
+    db.session.delete(row)
+    db.session.commit()
 
     try:
         token_http = requests.post(
