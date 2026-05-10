@@ -22,6 +22,13 @@ friends_bp = Blueprint("friends", __name__)
 TALKJS_SECRET_KEY = os.environ.get('TALKJS_SECRET_KEY', 'change-pls')
 TALKJS_APP_ID = os.environ.get('TALKJS_APP_ID', 'foobar')
 
+def _clean_display_name(name: str | None, fallback: str) -> str:
+    if isinstance(name, str):
+        cleaned = name.strip().rstrip(",， ").strip()
+        if cleaned:
+            return cleaned
+    return fallback
+
 
 def send_email(recipient, body):
     client = sendgrid.SendGridAPIClient(api_key=os.environ.get("SENDGRID_API_KEY"))
@@ -290,7 +297,7 @@ def get_everything():
     all_user_rows = db.session.query(Users.netid, Users.name).all()
     
     all_users_list = [
-        {"value": row.netid, "label": row.name} 
+        {"value": row.netid, "label": _clean_display_name(row.name, row.netid)}
         for row in all_user_rows
     ]
 

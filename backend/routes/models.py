@@ -75,6 +75,12 @@ class AuthNonce(db.Model):
     username = db.Column(db.String, db.ForeignKey("users.netid"), nullable=False, index=True)
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
 
+# OAuth state handoff (one-time CSRF token for provider callbacks)
+class OAuthState(db.Model):
+    state = db.Column(db.String(64), primary_key=True)
+    username = db.Column(db.String, db.ForeignKey("users.netid"), nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
+
 # Profile Pics
 class UserImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)

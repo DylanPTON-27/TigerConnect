@@ -17,6 +17,11 @@ FRONTEND_URL = os.getenv("FRONTEND_URL") or ("http://localhost:5173/app.html" if
 if not FRONTEND_URL:
     raise RuntimeError("FRONTEND_URL must be set in non-development environments.")
 
+def _clean_trailing_punctuation(value: str | None) -> str:
+    if not isinstance(value, str):
+        return ""
+    return value.strip().rstrip(",， ").strip()
+
 
 def _frontend_landing_url() -> str:
     parsed = urllib.parse.urlsplit(FRONTEND_URL)
@@ -34,25 +39,43 @@ def _display_name_from_cas(userinfo: dict, username: str) -> str:
     if isinstance(raw, list):
         raw = raw[0] if raw else None
     if isinstance(raw, str):
-        value = raw.strip()
+        value = _clean_trailing_punctuation(raw)
         if value:
             if "," in value:
                 last, first = [part.strip() for part in value.split(",", 1)]
                 if first and last:
                     return f"{first} {last}"
-            return value
+            return _clean_trailing_punctuation(value)
     if username[0] == ' ':
         username = username[1:]
     return username
 
 
 def _ensure_user(username: str, display_name: str | None = None) -> Users:
+    def _clean_name(value: str | None) -> str | None:
+        cleaned = _clean_trailing_punctuation(value)
+        return cleaned or None
+
     user = Users.query.filter_by(netid=username).first()
     if user:
         changed = False
-        if display_name and not user.name:
-            user.name = display_name
+        normalized_existing = _clean_name(user.name)
+        normalized_incoming = _clean_name(display_name)
+
+        if normalized_existing != user.name:
+            user.name = normalized_existing
             changed = True
+
+        # Only replace name when we have a meaningful incoming display name.
+        # Avoid clobbering with placeholder values like raw username/netid.
+        if (
+            normalized_incoming
+            and normalized_incoming.lower() != username.lower()
+            and user.name != normalized_incoming
+        ):
+            user.name = normalized_incoming
+            changed = True
+
         if not user.email:
             user.email = f"{username}@princeton.edu"
             changed = True
@@ -60,9 +83,10 @@ def _ensure_user(username: str, display_name: str | None = None) -> Users:
             db.session.flush()
         return user
 
+    cleaned_display_name = _clean_name(display_name)
     user = Users(
         netid=username,
-        name=display_name or username,
+        name=cleaned_display_name or username,
         email=f"{username}@princeton.edu",
     )
     db.session.add(user)
@@ -118,7 +142,7 @@ def login():
         login_url = CAS_URL + "login?service=" + urllib.parse.quote(strip_ticket(flask.request.url))
         return flask.redirect(login_url)
 
-    username = str(userinfo.get("user", "")).strip().lower()
+    username = _clean_trailing_punctuation(str(userinfo.get("user", ""))).lower()
     if not username:
         login_url = CAS_URL + "login?service=" + urllib.parse.quote(strip_ticket(flask.request.url))
         return flask.redirect(login_url)
@@ -132,23 +156,8 @@ def login():
     try:
         db.session.commit()
     except IntegrityError:
-        # Production safety fallback: if nonce FK constraints are out of sync,
-        # continue login by redirecting with short-lived tokens instead of nonce handoff.
         db.session.rollback()
-        try:
-            _ensure_user(username, real_name)
-            db.session.commit()
-        except IntegrityError:
-            db.session.rollback()
-        access_token = flask_jwt_extended.create_access_token(identity=username)
-        refresh_token = flask_jwt_extended.create_refresh_token(identity=username)
-        query = urllib.parse.urlencode({
-            "username": username,
-            "accessToken": access_token,
-            "refreshToken": refresh_token,
-            "displayName": real_name,
-        })
-        return flask.redirect(f"{FRONTEND_URL}?{query}")
+        return flask.jsonify({"error": "failed to initialize login session"}), 500
 
     return flask.redirect(f"{FRONTEND_URL}?nonce={nonce}")
 
@@ -165,7 +174,7 @@ def get_tokens():
 
     username = row.username
     user = _ensure_user(username, username)
-    display_name = user.name or username
+    display_name = _clean_trailing_punctuation(user.name or username)
 
     db.session.delete(row)
     db.session.commit()
