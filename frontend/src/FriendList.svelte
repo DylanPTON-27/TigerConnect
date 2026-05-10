@@ -607,7 +607,10 @@
 		border: 1px solid var(--tc-btn);
 		background: var(--tc-btn);
 		color: var(--tc-btn-text);
-		height: 5vh;
+		height: 6vh;
+		position: relative;
+		top: 10%;
+		transform: translateY(-10%);
 	}
 
 	.add-btn:hover {

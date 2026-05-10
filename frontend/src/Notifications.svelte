@@ -88,7 +88,7 @@
 		<div class={areNotifications ? 'rounded-xl active' : 'rounded-xl'}>
 			<Bell
 				class="size-9.5 rounded-xl p-1 border-2"
-				style="border-color:var(--tc-text); color:var(--tc-text);"
+				style="border-color:var(--tc-border);background:var(--tc-text);color:var(--tc-surface);"
 			/>
 		</div>
 	</Popover.Trigger>
