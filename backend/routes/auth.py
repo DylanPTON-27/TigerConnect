@@ -17,6 +17,11 @@ FRONTEND_URL = os.getenv("FRONTEND_URL") or ("http://localhost:5173/app.html" if
 if not FRONTEND_URL:
     raise RuntimeError("FRONTEND_URL must be set in non-development environments.")
 
+def _clean_trailing_punctuation(value: str | None) -> str:
+    if not isinstance(value, str):
+        return ""
+    return value.strip().rstrip(",， ").strip()
+
 
 def _frontend_landing_url() -> str:
     parsed = urllib.parse.urlsplit(FRONTEND_URL)
@@ -34,13 +39,13 @@ def _display_name_from_cas(userinfo: dict, username: str) -> str:
     if isinstance(raw, list):
         raw = raw[0] if raw else None
     if isinstance(raw, str):
-        value = raw.strip()
+        value = _clean_trailing_punctuation(raw)
         if value:
             if "," in value:
                 last, first = [part.strip() for part in value.split(",", 1)]
                 if first and last:
                     return f"{first} {last}"
-            return value.rstrip(", ").strip()
+            return _clean_trailing_punctuation(value)
     if username[0] == ' ':
         username = username[1:]
     return username
@@ -48,9 +53,7 @@ def _display_name_from_cas(userinfo: dict, username: str) -> str:
 
 def _ensure_user(username: str, display_name: str | None = None) -> Users:
     def _clean_name(value: str | None) -> str | None:
-        if not isinstance(value, str):
-            return None
-        cleaned = value.rstrip(", ").strip()
+        cleaned = _clean_trailing_punctuation(value)
         return cleaned or None
 
     user = Users.query.filter_by(netid=username).first()
@@ -139,7 +142,7 @@ def login():
         login_url = CAS_URL + "login?service=" + urllib.parse.quote(strip_ticket(flask.request.url))
         return flask.redirect(login_url)
 
-    username = str(userinfo.get("user", "")).strip().lower()
+    username = _clean_trailing_punctuation(str(userinfo.get("user", ""))).lower()
     if not username:
         login_url = CAS_URL + "login?service=" + urllib.parse.quote(strip_ticket(flask.request.url))
         return flask.redirect(login_url)
@@ -171,7 +174,7 @@ def get_tokens():
 
     username = row.username
     user = _ensure_user(username, username)
-    display_name = user.name or username
+    display_name = _clean_trailing_punctuation(user.name or username)
 
     db.session.delete(row)
     db.session.commit()
