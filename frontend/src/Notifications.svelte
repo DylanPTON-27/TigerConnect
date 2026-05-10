@@ -72,10 +72,10 @@
 		});
 
 		if (res.ok) {
-			receiverNetid = "";
-			requests = requests.filter((r) => (Array.isArray(r) ? r[0] : r) !== (Array.isArray(receiver) ? receiver[0] : receiver));
+			requests = requests.filter(r => r.netid !== receiver);
 			window.dispatchEvent(new Event("friends:changed"));
 			areNotifications = requests.length > 0;
+			reloadConvos.toggle();
 		} else {
 			const err = await res.json().catch(() => ({}));
 			requestMessage = err.error || "Failed to block user.";
