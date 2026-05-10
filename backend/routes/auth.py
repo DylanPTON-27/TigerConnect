@@ -47,12 +47,32 @@ def _display_name_from_cas(userinfo: dict, username: str) -> str:
 
 
 def _ensure_user(username: str, display_name: str | None = None) -> Users:
+    def _clean_name(value: str | None) -> str | None:
+        if not isinstance(value, str):
+            return None
+        cleaned = value.rstrip(", ").strip()
+        return cleaned or None
+
     user = Users.query.filter_by(netid=username).first()
     if user:
         changed = False
-        if display_name and user.name != display_name:
-            user.name = display_name
+        normalized_existing = _clean_name(user.name)
+        normalized_incoming = _clean_name(display_name)
+
+        if normalized_existing != user.name:
+            user.name = normalized_existing
             changed = True
+
+        # Only replace name when we have a meaningful incoming display name.
+        # Avoid clobbering with placeholder values like raw username/netid.
+        if (
+            normalized_incoming
+            and normalized_incoming.lower() != username.lower()
+            and user.name != normalized_incoming
+        ):
+            user.name = normalized_incoming
+            changed = True
+
         if not user.email:
             user.email = f"{username}@princeton.edu"
             changed = True
@@ -60,9 +80,10 @@ def _ensure_user(username: str, display_name: str | None = None) -> Users:
             db.session.flush()
         return user
 
+    cleaned_display_name = _clean_name(display_name)
     user = Users(
         netid=username,
-        name=display_name or username,
+        name=cleaned_display_name or username,
         email=f"{username}@princeton.edu",
     )
     db.session.add(user)
